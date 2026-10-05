@@ -1,0 +1,2995 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boutique LM | Luxury Reselling & Atelier Services</title>
+    <meta name="description"
+        content="Boutique LM: reselling di borse e accessori di lusso autentici. Hermes, Chanel, Louis Vuitton e altri grandi brand. Servizi di restauro e upcycling su richiesta.">
+
+    <!-- SOCIAL PREVIEW (Open Graph) -->
+    <meta property="og:title" content="Boutique LM | Luxury Reselling & Atelier Services">
+    <meta property="og:description"
+        content="Borse e accessori di lusso autentici selezionati. Scopri la collezione Boutique LM — reselling certificato e servizi di restauro su richiesta.">
+    <meta property="og:image"
+        content="https://d5968b-0f.myshopify.com/cdn/shop/files/1FA82E27-73FC-41B3-AF73-672E17B731F4.jpg?v=1764622013&width=1200">
+    <meta property="og:url" content="https://boutiquelm.it">
+    <meta property="og:type" content="website">
+
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👜</text></svg>">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- FIREBASE CONFIGURATION & INITIALIZATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        import { getFirestore, collection, doc, onSnapshot, query, updateDoc, increment, getDoc, setDoc, getDocs, addDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCG2vJW4Zcs1mmANEq7TsX2hdoLo4EzpTg",
+                authDomain: "boutiquelm.firebaseapp.com",
+                projectId: "boutiquelm",
+                storageBucket: "boutiquelm.firebasestorage.app",
+                messagingSenderId: "233886334030",
+                appId: "1:233886334030:web:d2951ad7e0095135ba971f",
+                measurementId: "G-EENPRN5PVL"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            const storage = getStorage(app);
+            const analytics = getAnalytics(app); // Attiva Analytics
+            const appId = 'boutique-lm-app';
+
+            // Espone tutto a window per l'admin panel
+            window.fb = {
+                db, auth, storage, appId,
+                collection, doc, onSnapshot, query, updateDoc, increment, getDoc, setDoc,
+                signInWithEmailAndPassword, signOut, getDocs, addDoc, deleteDoc,
+                ref, uploadBytes, getDownloadURL, onAuthStateChanged
+            };
+
+            console.log("✅ Firebase Ready (Secure Mode)");
+
+        } catch (e) {
+            console.error("Errore inizializzazione Firebase:", e);
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://d5968b-0f.myshopify.com/cdn/shop/files/1FA82E27-73FC-41B3-AF73-672E17B731F4.jpg?v=1764622013&width=1500');
+            background-size: cover;
+            background-position: center;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .animate-marquee {
+            display: inline-block;
+            animation: marquee 30s linear infinite;
+        }
+
+        .drawer {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .out-of-stock {
+            filter: grayscale(1);
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .sold-out-badge {
+            background: #000;
+            color: #fff;
+            padding: 4px 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .ai-loading {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .5;
+            }
+        }
+
+        .thumbnail.active {
+            border-color: black;
+            opacity: 1;
+        }
+
+        /* Skeleton loader */
+        @keyframes skeleton-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+        .skeleton {
+            background: #e4e4e7;
+            animation: skeleton-pulse 1.4s ease-in-out infinite;
+            border-radius: 4px;
+        }
+
+        /* Fade-in for thank-you banner */
+        @keyframes slide-down {
+            from { opacity: 0; transform: translateX(-50%) translateY(-16px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .animate-slide-down { animation: slide-down 0.35s ease-out both; }
+    </style>
+</head>
+
+<body class="bg-zinc-50 text-zinc-900">
+
+    <!-- NAVIGAZIONE PRINCIPALE -->
+    <nav class="fixed w-full z-50 glass-nav border-b border-zinc-100">
+        <div class="max-w-7xl mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
+            <button onclick="toggleMenu()" class="md:hidden p-2"><i data-lucide="menu"></i></button>
+            <div class="flex items-center cursor-pointer" onclick="showView('home')">
+                <img src="logo.png" alt="Boutique LM" class="h-10 md:h-12 mr-3">
+                <span class="serif text-xl md:text-2xl font-bold tracking-tighter uppercase tracking-[0.2em]">Boutique
+                    LM</span>
+            </div>
+            <div class="hidden md:flex space-x-8 text-[10px] font-bold tracking-[0.2em] uppercase">
+                <a href="#vetrina" onclick="showView('home')" class="hover:text-zinc-500 transition">Collezione</a>
+                <a href="#servizi" onclick="showView('home')" class="hover:text-zinc-500 transition">Servizi</a>
+                <a href="#storia" onclick="showView('home')" class="hover:text-zinc-500 transition">Chi siamo</a>
+                <button onclick="openStylist()" class="text-zinc-900 font-bold italic border-b border-black">✨ AI
+                    STYLIST</button>
+            </div>
+            <button onclick="toggleCart(true)" class="relative p-2 hover:bg-zinc-100 rounded-full transition">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                <span id="cart-count"
+                    class="absolute -top-1 -right-1 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MENU LATERALE MOBILE -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] bg-white translate-x-full drawer md:hidden">
+        <div class="p-6">
+            <div class="flex justify-end mb-12"><button onclick="toggleMenu()" class="p-2 text-zinc-400"><i
+                        data-lucide="x" class="w-8 h-8"></i></button></div>
+            <div class="flex flex-col space-y-8 text-3xl serif font-bold text-zinc-900">
+                <a href="#" onclick="showView('home'); toggleMenu()">Home</a>
+                <a href="#vetrina" onclick="showView('home'); toggleMenu()">Collezione</a>
+                <a href="#servizi" onclick="showView('home'); toggleMenu()">Servizi</a>
+                <a href="#storia" onclick="showView('home'); toggleMenu()">Chi siamo</a>
+                <button onclick="openStylist(); toggleMenu()" class="text-left text-zinc-600">✨ AI Stylist</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE AI STYLIST -->
+    <div id="stylist-modal"
+        class="fixed inset-0 z-[100] bg-black/60 hidden backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-zinc-100 flex justify-between items-center">
+                <h3 class="serif text-2xl font-bold">✨ AI Personal Stylist</h3>
+                <button onclick="closeStylist()" class="p-2"><i data-lucide="x"></i></button>
+            </div>
+            <div class="p-8">
+                <p class="text-xs text-zinc-400 uppercase tracking-widest mb-4">Powered by Trendiu AI</p>
+                <textarea id="stylist-input"
+                    class="w-full h-32 p-4 bg-zinc-50 border border-zinc-100 rounded-xl mb-6 text-sm focus:border-black outline-none transition"
+                    placeholder="Es: Cerco un regalo unico per una persona che ama il vintage..."></textarea>
+                <button onclick="getStylistAdvice()" id="stylist-btn"
+                    class="w-full bg-black text-white py-4 font-bold uppercase text-[10px] tracking-widest rounded-lg">Chiedi
+                    consiglio</button>
+                <div id="stylist-result"
+                    class="mt-8 hidden p-6 bg-zinc-50 rounded-xl text-sm italic border-l-4 border-black"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE SCELTA CONTATTO PREVENTIVO -->
+    <div id="contact-choice-modal"
+        class="fixed inset-0 z-[100] bg-black/60 hidden backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl p-6 border border-zinc-100">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="serif text-xl font-bold tracking-tight text-zinc-900">Richiedi Preventivo</h3>
+                <button onclick="closeContactChoice()" class="p-2 hover:bg-zinc-100 rounded-full transition"><i data-lucide="x"></i></button>
+            </div>
+            <p class="text-xs text-zinc-500 uppercase tracking-widest mb-6">Come preferisci metterti in contatto con l'Atelier?</p>
+            <div class="space-y-3 font-bold uppercase text-[10px] tracking-widest italic">
+                <button onclick="sendContactChoice('whatsapp')" class="w-full bg-[#25D366] text-white py-4 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition shadow-lg shadow-green-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                    WhatsApp
+                </button>
+                <button onclick="sendContactChoice('email')" class="w-full bg-black text-white py-4 rounded-lg flex items-center justify-center gap-2 hover:bg-zinc-800 transition shadow-lg shadow-zinc-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                    E-mail
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARRELLO -->
+    <div id="cart-sidebar"
+        class="fixed inset-y-0 right-0 w-full md:w-[400px] z-[70] bg-white shadow-2xl translate-x-full drawer border-l border-zinc-100">
+        <div class="h-full flex flex-col p-6">
+            <div class="flex justify-between items-center mb-10 border-b pb-4">
+                <h2 class="serif text-2xl font-bold text-zinc-900 tracking-tighter">Il tuo carrello</h2>
+                <button onclick="toggleCart(false)" class="p-2 hover:bg-zinc-100 rounded-full transition"><i
+                        data-lucide="x"></i></button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto space-y-6">
+                <p class="text-zinc-400 italic text-center py-20 font-light">Il tuo carrello è vuoto.</p>
+            </div>
+            <div class="border-t border-zinc-200 pt-6 mt-4">
+                <div class="flex justify-between text-lg font-bold mb-6">
+                    <span>Totale</span>
+                    <span id="cart-total">€0,00</span>
+                </div>
+                <button onclick="checkout()" id="checkout-btn"
+                    class="w-full bg-black text-white py-5 font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg disabled:bg-zinc-400">
+                    Procedi al pagamento
+                </button>
+                <p class="text-[8px] text-center text-zinc-400 mt-4 uppercase tracking-widest text-overlay">
+                    Sincronizzazione Stock Attiva</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW: HOME -->
+    <main id="view-home" class="view-section active">
+        <section class="relative h-[85vh] md:h-screen flex items-center justify-center text-white hero-gradient px-4">
+            <div class="text-center max-w-4xl animate-fadeIn">
+                <span class="text-[10px] uppercase tracking-[0.6em] font-bold mb-6 block opacity-90">Firenze • Luxury Reselling</span>
+                <h1 class="serif text-4xl md:text-8xl font-bold mb-8 leading-tight">Il Lusso Autentico.</h1>
+                <p class="text-sm md:text-xl font-light mb-12 tracking-widest opacity-90 max-w-2xl mx-auto italic">Borse e accessori di grandi maison, selezionati e autenticati. Pezzi rari a prezzi accessibili.</p>
+                <a href="#vetrina"
+                    class="bg-white text-black px-12 py-5 font-bold tracking-[0.2em] uppercase text-[10px] shadow-2xl hover:bg-zinc-100 transition">Scopri
+                    la Collezione</a>
+            </div>
+        </section>
+
+        <div class="bg-black text-white py-4 overflow-hidden border-y border-white/5">
+            <div class="animate-marquee whitespace-nowrap">
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Hermes • Chanel • Louis Vuitton</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Spedizione Express 24/48h</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Autenticità Garantita</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Atelier Firenze</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Restauro & Upcycling su Richiesta</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Hermes • Chanel • Louis Vuitton</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Spedizione Express 24/48h</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Autenticità Garantita</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Atelier Firenze</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Restauro & Upcycling su Richiesta</span>
+            </div>
+        </div>
+
+        <!-- VETRINA: prodotti con alta priorità -->
+        <section id="vetrina" class="max-w-7xl mx-auto px-4 py-16 md:py-24">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+                <div>
+                    <span class="text-[10px] font-bold tracking-[0.5em] text-zinc-400 uppercase mb-2 block">Selezione Esclusiva</span>
+                    <h2 class="serif text-4xl md:text-6xl font-bold tracking-tighter">In Vetrina</h2>
+                </div>
+                <a href="#category-sections" class="text-[9px] font-bold uppercase tracking-widest border-b border-black hover:text-zinc-500 transition">Tutta la Collezione ↓</a>
+            </div>
+            <div id="vetrina-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- SEZIONI PER CATEGORIA: dinamiche da Firestore -->
+        <div id="category-sections" class="max-w-7xl mx-auto px-4 pb-24 space-y-24">
+            <!-- Populated by JS -->
+        </div>
+
+        <!-- SEZIONE SERVIZI ATELIER -->
+        <section id="servizi" class="py-24 bg-zinc-50 border-t border-zinc-100">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="text-center mb-16">
+                    <span class="text-[10px] font-bold tracking-[0.5em] text-zinc-400 uppercase mb-4 block">Su Richiesta</span>
+                    <h2 class="serif text-4xl md:text-6xl font-bold tracking-tighter mb-6">Servizi Atelier</h2>
+                    <p class="text-zinc-500 text-lg font-light max-w-xl mx-auto italic">Oltre alla vendita, il nostro atelier fiorentino offre servizi esclusivi di restauro e trasformazione su misura.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+                    <div class="bg-white p-10 rounded-2xl border border-zinc-100 shadow-sm hover:shadow-lg transition group">
+                        <div class="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </div>
+                        <h3 class="serif text-2xl font-bold mb-3">Restauro</h3>
+                        <p class="text-zinc-500 font-light text-sm leading-relaxed mb-6">Ripristiniamo borse e accessori di lusso al loro splendore originale. Cuciture, trattamenti, rifinitura del cuoio.</p>
+                        <span class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Su preventivo</span>
+                    </div>
+                    <div class="bg-white p-10 rounded-2xl border border-zinc-100 shadow-sm hover:shadow-lg transition group">
+                        <div class="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        </div>
+                        <h3 class="serif text-2xl font-bold mb-3">Upcycling</h3>
+                        <p class="text-zinc-500 font-light text-sm leading-relaxed mb-6">Trasformiamo materiali autentici di archivio in nuovi accessori unici. Ogni pezzo è irripetibile.</p>
+                        <span class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Su preventivo</span>
+                    </div>
+                    <div class="bg-white p-10 rounded-2xl border border-zinc-100 shadow-sm hover:shadow-lg transition group">
+                        <div class="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <h3 class="serif text-2xl font-bold mb-3">Autenticazione</h3>
+                        <p class="text-zinc-500 font-light text-sm leading-relaxed mb-6">Valutazione professionale dell'autenticità e dello stato di conservazione dei tuoi articoli di lusso.</p>
+                        <span class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Su appuntamento</span>
+                    </div>
+                </div>
+
+                <!-- FORM DI CONTATTO -->
+                <div class="bg-zinc-900 text-white rounded-3xl p-8 md:p-16 max-w-3xl mx-auto">
+                    <div class="text-center mb-10">
+                        <h3 class="serif text-3xl md:text-4xl font-bold mb-4">Richiedi informazioni</h3>
+                        <p class="text-zinc-400 font-light italic">Descrivici cosa hai in mente. Ti risponderemo entro 24 ore.</p>
+                    </div>
+                    <form id="servizi-form" onsubmit="submitServicesForm(event)" class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Nome *</label>
+                                <input type="text" id="form-nome" required class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm placeholder-zinc-500 focus:border-white outline-none transition" placeholder="Il tuo nome">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Email *</label>
+                                <input type="email" id="form-email" required class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm placeholder-zinc-500 focus:border-white outline-none transition" placeholder="tua@email.com">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Tipo di servizio</label>
+                            <select id="form-servizio" class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:border-white outline-none transition">
+                                <option value="Restauro">Restauro</option>
+                                <option value="Upcycling">Upcycling / Trasformazione</option>
+                                <option value="Autenticazione">Autenticazione / Valutazione</option>
+                                <option value="Altro">Altro / Informazioni generali</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Il tuo messaggio *</label>
+                            <textarea id="form-messaggio" required rows="4" class="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm placeholder-zinc-500 focus:border-white outline-none transition resize-none" placeholder="Descrivi il tuo articolo e cosa vorresti fare..."></textarea>
+                        </div>
+                        <div id="form-success" class="hidden bg-green-900/50 border border-green-700 text-green-300 text-sm p-4 rounded-lg text-center font-bold">✅ Richiesta inviata! Ti contatteremo presto.</div>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button type="submit" id="form-submit-btn" class="flex-1 bg-white text-black py-4 font-bold uppercase text-[10px] tracking-widest rounded-lg hover:bg-zinc-100 transition">Invia per Email</button>
+                            <button type="button" onclick="sendServicesWhatsApp()" class="flex-1 bg-[#25D366] text-white py-4 font-bold uppercase text-[10px] tracking-widest rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                                Scrivi su WhatsApp
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE CHI SIAMO -->
+        <section id="storia" class="bg-zinc-900 text-white py-24">
+            <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                <div class="relative group overflow-hidden">
+                    <img src="https://d5968b-0f.myshopify.com/cdn/shop/files/6A893521-1136-4A6A-936C-315968B46633.jpg?v=1764622012&width=800"
+                        class="w-full aspect-[4/5] object-cover grayscale opacity-60 group-hover:opacity-100 transition duration-1000">
+                </div>
+                <div class="max-w-xl">
+                    <span class="text-[10px] font-bold tracking-[0.5em] text-zinc-500 uppercase mb-8 block">Chi siamo</span>
+                    <h2 class="serif text-4xl md:text-6xl font-bold mb-10 leading-tight">Luxury reselling con cuore fiorentino</h2>
+                    <p class="text-zinc-400 text-lg font-light leading-relaxed mb-6 italic">Selezioniamo e vendiamo borse e accessori autentici delle più grandi maison internazionali — Hermès, Chanel, Louis Vuitton e altri. Ogni pezzo è verificato e garantito.</p>
+                    <p class="text-zinc-400 text-lg font-light leading-relaxed mb-10 italic">Offriamo anche, su richiesta, servizi artigianali di restauro e trasformazione per chi vuole dare nuova vita ai propri pezzi d'archivio.</p>
+                    <p class="serif italic text-white text-3xl pt-10 border-t border-white/10 tracking-tighter">"Autenticità, selezione, rarità."</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- VIEW: DETTAGLIO PRODOTTO -->
+    <main id="view-product" class="view-section pt-32 pb-24 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4">
+            <!-- NAVIGAZIONE INTERNA -->
+            <div class="flex items-center gap-2 text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400 mb-16">
+                <button onclick="showView('home')" class="hover:text-black transition">Home</button>
+                <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                <button onclick="showView('home')" class="hover:text-black transition">Collezione</button>
+                <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                <span class="text-black" id="detail-breadcrumb-name">Caricamento...</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
+                <!-- Gallery -->
+                <div class="space-y-6">
+                    <div class="relative overflow-hidden group">
+                        <img id="detail-image-main" src=""
+                            class="w-full aspect-square object-cover rounded-sm transition duration-700 group-hover:scale-105">
+                        <div id="detail-soldout-overlay"
+                            class="absolute inset-0 bg-white/40 backdrop-blur-[2px] hidden items-center justify-center">
+                            <span
+                                class="bg-black text-white px-8 py-4 font-bold tracking-widest uppercase text-xl serif italic">Esaurito</span>
+                        </div>
+                    </div>
+                    <div id="detail-thumbnails" class="grid grid-cols-4 gap-4"></div>
+                </div>
+
+                <!-- Info -->
+                <div class="sticky top-32 h-fit">
+                    <span
+                        class="text-[10px] font-bold tracking-[0.4em] uppercase text-zinc-400 mb-6 block italic">Trendiu
+                        Selected Atelier</span>
+                    <h1 id="detail-title"
+                        class="serif text-4xl md:text-6xl font-bold mb-6 text-zinc-900 leading-tight tracking-tighter">
+                        Nome Prodotto</h1>
+
+                    <div id="price-container">
+                        <p id="detail-price" class="text-3xl font-light mb-10 tracking-tight">€0,00</p>
+                    </div>
+
+                    <div class="prose prose-zinc mb-12">
+                        <p id="detail-description" class="text-zinc-500 leading-relaxed text-lg font-light italic"></p>
+                    </div>
+
+                    <div id="detail-variants" class="mb-12 space-y-6"></div>
+
+                    <!-- Caratteristiche Prodotto (Metadata) -->
+                    <div id="detail-metadata" class="mb-12 border-t border-b border-zinc-200 py-6 text-sm grid grid-cols-2 gap-y-3 gap-x-4">
+                        <div id="detail-brand-container" class="hidden"><span class="font-bold text-zinc-500 uppercase text-[9px] tracking-wider block">Brand</span><span id="detail-brand" class="text-zinc-900 font-semibold"></span></div>
+                        <div id="detail-code-container" class="hidden"><span class="font-bold text-zinc-500 uppercase text-[9px] tracking-wider block">Codice Interno</span><span id="detail-code" class="text-zinc-900 font-mono"></span></div>
+                        <div id="detail-origin-container" class="hidden"><span class="font-bold text-zinc-500 uppercase text-[9px] tracking-wider block">Origine</span><span id="detail-origin" class="text-zinc-900 font-medium"></span></div>
+                        <div id="detail-condition-container" class="hidden"><span class="font-bold text-zinc-500 uppercase text-[9px] tracking-wider block">Condizione</span><span id="detail-condition" class="text-zinc-900 font-medium text-amber-700"></span></div>
+                        <div id="detail-material-container" class="hidden"><span class="font-bold text-zinc-500 uppercase text-[9px] tracking-wider block">Materiale</span><span id="detail-material" class="text-zinc-900 font-medium"></span></div>
+                        <div id="detail-serial-container" class="hidden"><span class="font-bold text-zinc-500 uppercase text-[9px] tracking-wider block">N° Seriale / Codice</span><span id="detail-serial" class="text-zinc-900 font-mono"></span></div>
+                        <div id="detail-note-container" class="col-span-2 hidden"><span class="font-bold text-zinc-500 uppercase text-[9px] tracking-wider block">Nota Atelier</span><span id="detail-note" class="text-zinc-900 italic font-light"></span></div>
+                    </div>
+
+                    <!-- AI Features -->
+                    <div id="ai-features-container">
+                        <div class="bg-zinc-100 p-8 rounded-xl mb-12 border border-zinc-200/50 transition hover:shadow-md">
+                            <div class="flex items-center justify-between mb-6">
+                                <h4 class="text-[10px] font-bold tracking-[0.4em] uppercase text-zinc-400 italic">✨ AI Stylist</h4>
+                                <button onclick="generateProductStory()" id="story-btn"
+                                    class="text-[9px] font-bold uppercase underline hover:text-black transition">Scopri la storia</button>
+                            </div>
+                            <p id="detail-story" class="text-sm text-zinc-600 leading-relaxed font-light italic">Scopri la storia e la provenienza di questo pezzo...</p>
+                        </div>
+                    </div>
+
+                    <button id="add-to-cart-btn" onclick="addToCartCurrent()"
+                        class="w-full bg-black text-white py-6 font-bold uppercase text-[11px] tracking-[0.3em] hover:bg-zinc-800 transition shadow-2xl disabled:bg-zinc-300">
+                        Aggiungi al carrello
+                    </button>
+
+                    <!-- Share Button -->
+                    <button id="share-btn" onclick="shareProduct()"
+                        class="w-full mt-3 border border-zinc-200 text-zinc-700 py-4 font-bold uppercase text-[10px] tracking-[0.2em] hover:border-black hover:text-black transition flex items-center justify-center gap-2">
+                        <i data-lucide="share-2" class="w-4 h-4"></i> Condividi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-zinc-50 border-t border-zinc-200 py-20 text-center">
+        <img src="logo.png" alt="Boutique LM" class="h-20 mx-auto mb-6 opacity-90">
+        <h2 class="serif text-2xl font-bold mb-8 uppercase tracking-widest text-zinc-900">BOUTIQUE LM</h2>
+        <div class="flex flex-col md:flex-row justify-center items-center gap-8 mb-12">
+            <a href="https://www.instagram.com/boutique_lm___" target="_blank"
+                class="text-[10px] font-bold tracking-widest uppercase hover:text-zinc-400 transition text-zinc-600">Instagram</a>
+            <a href="https://www.tiktok.com/@boutique__lm" target="_blank"
+                class="text-[10px] font-bold tracking-widest uppercase hover:text-zinc-400 transition text-zinc-600">TikTok</a>
+            <a href="mailto:info@boutiquelm.it"
+                class="text-[10px] font-bold tracking-widest uppercase hover:text-zinc-400 transition text-zinc-600">info@boutiquelm.it</a>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-center items-center gap-6 mb-8 text-zinc-500">
+            <a href="legal/terms.html" target="_blank"
+                class="text-[9px] uppercase tracking-widest hover:text-black transition">Termini & Condizioni</a>
+            <a href="legal/privacy.html" target="_blank"
+                class="text-[9px] uppercase tracking-widest hover:text-black transition">Privacy Policy</a>
+            <a href="legal/cookies.html" target="_blank"
+                class="text-[9px] uppercase tracking-widest hover:text-black transition">Cookie Policy</a>
+        </div>
+
+        <!-- Area Riservata (Link Nascosto) -->
+        <a href="#admin" class="opacity-0 hover:opacity-20 text-[6px] transition uppercase tracking-widest">Admin</a>
+
+        <p class="uppercase tracking-[0.5em] text-[9px] text-zinc-400 font-bold mt-4">Luxury Reselling & Atelier Services • Firenze • 2025</p>
+    </footer>
+
+    <!-- WHATSAPP -->
+    <a href="https://wa.me/393931218244" target="_blank"
+        class="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition z-[60] flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-message-circle">
+            <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+        </svg>
+    </a>
+
+    <script>
+        let apiKey = "AIzaSyCG2vJW4Zcs1mmANEq7TsX2hdoLo4EzpTg";
+        let currentProductId = null;
+        let selectedVariant = "";
+        let localProducts = [];
+        let cart = [];
+
+        // ---------------------------------------------------------------------------------------
+        // ⚠️ GESTIONE PRODOTTI
+        // ---------------------------------------------------------------------------------------
+        // Initial empty state to prevent flicker before Firebase loads
+        const defaultProducts = [];
+
+        // Inizializza con i prodotti locali per uso offline
+        localProducts = defaultProducts;
+
+        // ---------------------------------------------------------
+        // FUNZIONE ADMIN (DA USARE UNA VOLTA SOLA PER POPOLARE IL DB)
+        // ---------------------------------------------------------
+        async function adminPopulateDB() {
+            alert("Funzione deprecata: usa il pannello Admin per aggiungere prodotti.");
+            /*
+            if (!window.fb) { alert("Attenzione: Firebase non è connesso. Configuralo prima di usare questa funzione."); return; }
+            const { db, appId, setDoc, doc } = window.fb;
+
+            // Password semplice per evitare click accidentali
+            const password = prompt("Inserisci password Admin per inizializzare il DB:");
+            if (password !== "admin123") { alert("Password errata."); return; }
+
+            if (!confirm("Sei sicuro? Questo caricherà tutti i prodotti di default nel database online.")) return;
+
+            let count = 0;
+            try {
+                for (const p of defaultProducts) {
+                    // Carica ogni prodotto usando il suo ID
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', p.id), p);
+                    count++;
+                }
+                alert(`Successo! ${count} prodotti caricati nel database.`);
+                // Forza il ricaricamento per vedere i dati dal DB
+                location.reload();
+            } catch (e) {
+                alert("Errore durante il caricamento: " + e.message);
+                console.error(e);
+            }
+            */
+        }
+
+        // ---------------------------------------------------------
+        // LOGICA DI SINCRONIZZAZIONE (FIREBASE)
+        // ---------------------------------------------------------
+        function initDataSync() {
+            if (!window.fb) return;
+
+            const { db, appId, onSnapshot, collection, doc } = window.fb;
+
+            // Public sync for products
+            let deepLinkHandled = false;
+            const productsCol = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+            onSnapshot(productsCol, (snapshot) => {
+                const dbProducts = [];
+                snapshot.forEach(doc => dbProducts.push({ id: doc.id, ...doc.data() }));
+                if (dbProducts.length > 0) {
+                    localProducts = dbProducts;
+                    renderHomeLayout();
+                    if (currentProductId) updateDetailViewState();
+
+                    // Deep link: auto-open product from URL ?id=...
+                    if (!deepLinkHandled) {
+                        deepLinkHandled = true;
+                        const params = new URLSearchParams(window.location.search);
+                        const deepId = params.get('id');
+                        if (deepId && localProducts.find(p => p.id === deepId)) {
+                            showProduct(deepId);
+                        }
+                    }
+                }
+            }, (error) => console.error("Trendiu DB Error:", error));
+
+            // Categories config sync
+            onSnapshot(doc(db, 'artifacts', appId, 'config', 'categories'), (snap) => {
+                if (snap.exists()) {
+                    categoryConfig = snap.data();
+                    renderHomeLayout();
+                }
+            }, (error) => console.info("ℹ️ Nessun config categorie trovato — si usa ordine default."));
+
+            // Settings Sync (Only if desired)
+            onSnapshot(doc(db, 'artifacts', appId, 'config', 'settings'), (snap) => {
+                if (snap.exists() && snap.data().geminiKey) {
+                    apiKey = snap.data().geminiKey;
+                    console.log("✨ Trendiu AI attiva (Key loaded)");
+                }
+            }, (error) => {
+                console.info("ℹ️ Sincronizzazione Trendiu AI (la chiave Gemini verrà caricata una volta loggati come Admin o configurata manualmente).");
+            });
+        }
+
+        async function handleStockDecrement(productId, variant) {
+            if (!window.fb) return true; // Offline mode
+
+            const { db, appId, doc, updateDoc, increment, getDoc } = window.fb;
+            const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', productId);
+            try {
+                const snap = await getDoc(productRef);
+                if (snap.exists()) {
+                    const currentStock = snap.data().variantsStock ? snap.data().variantsStock[variant] : 0;
+                    if (currentStock > 0) {
+                        const updateField = `variantsStock.${variant}`;
+                        await updateDoc(productRef, { [updateField]: increment(-1) });
+                        return true;
+                    }
+                }
+                return false;
+            } catch (e) {
+                console.error("Trendiu Stock Error:", e);
+                return false;
+            }
+        }
+
+        // ---------------------------------------------------------
+        // INTEGRAZIONE AI (GOOGLE GEMINI)
+        // ---------------------------------------------------------
+        async function callGemini(prompt, sys) {
+            if (!apiKey) return "Funzionalità AI non configurata (Manca API Key).";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const res = await fetch(url, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sys }] } }) });
+            const data = await res.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        // Helper to get catalog summary for AI
+        function getCatalogContext() {
+            if (!localProducts || localProducts.length === 0) return "Il catalogo è attualmente vuoto.";
+
+            // Find Bestseller (Most Stock) or just list
+            let maxStock = 0;
+            let bestSeller = "";
+
+            const list = localProducts.map(p => {
+                let s = 0;
+                if (p.variantsStock) s = Object.values(p.variantsStock).reduce((a, b) => a + b, 0);
+                else s = p.stock || 0;
+
+                if (s > maxStock) { maxStock = s; bestSeller = p.name; }
+
+                return `- ${p.name} (${p.category}): €${p.price} [${s > 0 ? 'Disponibile' : 'Esaurito'}]`;
+            }).join("\n");
+
+            return `CATALOGO ATTUALE:\n${list}\n\nPRODOTTO PIU' DISPONIBILE/VARIO: ${bestSeller}\n\nIMPORTANTE: Consiglia SOLO prodotti presenti in questa lista. Sii breve e diretto.`;
+        }
+
+        async function getStylistAdvice() {
+            const input = document.getElementById('stylist-input').value;
+            const resDiv = document.getElementById('stylist-result');
+            const btn = document.getElementById('stylist-btn');
+            if (!input.trim()) return;
+            btn.disabled = true;
+            resDiv.classList.remove('hidden', 'border-red-500');
+            resDiv.innerText = "AI Stylist sta analizzando la collezione...";
+
+            const context = getCatalogContext();
+            const sys = `Sei l'AI Stylist di Boutique LM, un e-commerce fiorentino di luxury reselling. Vendiamo borse e accessori autentici di Hermès, Chanel, Louis Vuitton e altri grandi brand. ${context}. Consiglia al cliente il pezzo più adatto alla sua richiesta, in modo elegante e diretto. Se la richiesta è volgare o inappropriata, rifiuta con estrema eleganza.`;
+
+            try { resDiv.innerText = await callGemini(input, sys); }
+            catch (e) { resDiv.innerText = "L'AI è momentaneamente offline."; resDiv.classList.add('border-red-500'); }
+            finally { btn.disabled = false; }
+        }
+
+        async function generateProductStory() {
+            const prod = localProducts.find(p => p.id === currentProductId);
+            const div = document.getElementById('detail-story');
+            const btn = document.getElementById('story-btn');
+            btn.disabled = true;
+            div.innerText = "AI Stylist sta analizzando il pezzo...";
+            const sys = `Sei l'AI Stylist di Boutique LM. Scrivi una breve descrizione (max 40 parole) che racconta la storia e l'allure di questo articolo di lusso: ${prod.name}. Menziona il brand, il periodo storico se rilevante, e perché è un pezzo da collezione. Tono elegante e da fashion insider.`;
+            try { div.innerText = `"${await callGemini("Racconta la storia di questo pezzo.", sys)}"`; }
+            catch (e) { div.innerText = "Informazioni non disponibili al momento."; }
+            finally { btn.disabled = false; }
+        }
+
+        // ---------------------------------------------------------
+        // FORM SERVIZI ATELIER
+        // ---------------------------------------------------------
+        function submitServicesForm(e) {
+            e.preventDefault();
+            const nome = document.getElementById('form-nome').value.trim();
+            const email = document.getElementById('form-email').value.trim();
+            const servizio = document.getElementById('form-servizio').value;
+            const messaggio = document.getElementById('form-messaggio').value.trim();
+            const btn = document.getElementById('form-submit-btn');
+
+            const subject = encodeURIComponent(`Richiesta ${servizio} - Boutique LM`);
+            const body = encodeURIComponent(`Nome: ${nome}\nEmail: ${email}\nServizio: ${servizio}\n\nMessaggio:\n${messaggio}`);
+            
+            window.location.href = `mailto:info@boutiquelm.it?subject=${subject}&body=${body}`;
+
+            // Mostra messaggio di successo
+            document.getElementById('form-success').classList.remove('hidden');
+            btn.disabled = true;
+            setTimeout(() => {
+                document.getElementById('form-success').classList.add('hidden');
+                document.getElementById('servizi-form').reset();
+                btn.disabled = false;
+            }, 5000);
+        }
+
+        function sendServicesWhatsApp() {
+            const nome = document.getElementById('form-nome').value.trim() || 'Cliente';
+            const servizio = document.getElementById('form-servizio').value;
+            const messaggio = document.getElementById('form-messaggio').value.trim();
+            
+            const testo = `Ciao Boutique LM! Sono ${nome}.\n\nVorrei richiedere informazioni per: *${servizio}*\n\n${messaggio ? messaggio : 'Potete contattarmi per un preventivo?'}`;
+            const url = `https://wa.me/393931218244?text=${encodeURIComponent(testo)}`;
+            window.open(url, '_blank');
+        }
+
+        // ---------------------------------------------------------
+        // HOME LAYOUT: VETRINA + SEZIONI PER CATEGORIA
+        // ---------------------------------------------------------
+        let categoryConfig = {}; // Loaded from Firestore: { "Borse": { order, coverImage, visible }, ... }
+
+        function renderHomeLayout() {
+            renderVetrina();
+            renderCategorySections();
+        }
+
+        function renderVetrina() {
+            const section = document.getElementById('vetrina');
+            const grid = document.getElementById('vetrina-grid');
+            if (!grid) return;
+
+            const vetrina = localProducts
+                .filter(p => !p.isService && (p.priority || 0) > 0)
+                .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+                .slice(0, 4);
+
+            if (vetrina.length === 0) {
+                if (section) section.classList.add('hidden');
+                return;
+            }
+            if (section) section.classList.remove('hidden');
+            grid.innerHTML = vetrina.map(p => buildProductCard(p)).join('');
+            lucide.createIcons();
+        }
+
+        function renderCategorySections() {
+            const container = document.getElementById('category-sections');
+            if (!container) return;
+
+            // Group non-service products by category
+            const catMap = {};
+            localProducts.filter(p => !p.isService).forEach(p => {
+                if (!p.category) return;
+                if (!catMap[p.category]) catMap[p.category] = [];
+                catMap[p.category].push(p);
+            });
+
+            // Sort categories: by config.order first, then alphabetically
+            const sortedCats = Object.keys(catMap).sort((a, b) => {
+                const oA = (categoryConfig[a] && categoryConfig[a].order) ? Number(categoryConfig[a].order) : 999;
+                const oB = (categoryConfig[b] && categoryConfig[b].order) ? Number(categoryConfig[b].order) : 999;
+                return oA !== oB ? oA - oB : a.localeCompare(b);
+            });
+
+            container.innerHTML = sortedCats.map(catName => {
+                const cfg = categoryConfig[catName] || {};
+                if (cfg.visible === false) return '';
+
+                const products = catMap[catName];
+                const shown = products.slice(0, 4);
+                const extraCount = products.length - 4;
+                const slugId = 'cat-' + catName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+
+                // Cover: from config, or fallback to first product image
+                let cover = cfg.coverImage || '';
+                if (!cover && products.length > 0) {
+                    const fp = products[0];
+                    if (fp.variantsData && fp.variantsData[0]) {
+                        const fv = fp.variantsData[0];
+                        cover = (fv.images && fv.images[0]) ? fv.images[0] : (fv.image || '');
+                    }
+                    if (!cover) cover = (fp.images && fp.images[0]) ? fp.images[0] : (fp.image || '');
+                }
+
+                return `
+                    <section id="${slugId}" class="category-section scroll-mt-24">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 pb-6 border-b border-zinc-100 gap-4">
+                            <div class="flex items-center gap-5">
+                                ${cover ? `<div class="w-14 h-14 md:w-20 md:h-20 rounded-xl overflow-hidden bg-zinc-100 shrink-0 shadow-sm border border-zinc-100"><img src="${cover}" class="w-full h-full object-cover" loading="lazy"></div>` : ''}
+                                <div>
+                                    <span class="text-[9px] font-bold tracking-[0.5em] text-zinc-400 uppercase mb-1 block">${products.length} ${products.length === 1 ? 'pezzo' : 'pezzi'} disponibili</span>
+                                    <h2 class="serif text-3xl md:text-5xl font-bold tracking-tighter">${catName}</h2>
+                                </div>
+                            </div>
+                            ${extraCount > 0 ? `<button onclick="toggleCatMore('${slugId}', ${products.length})" id="btn-${slugId}" class="text-[9px] font-bold uppercase tracking-widest border-b border-black hover:text-zinc-500 transition shrink-0">Vedi tutti (${products.length}) ↓</button>` : ''}
+                        </div>
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+                            ${shown.map(p => buildProductCard(p)).join('')}
+                        </div>
+                        ${extraCount > 0 ? `
+                        <div id="more-${slugId}" class="hidden mt-12 grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+                            ${products.slice(4).map(p => buildProductCard(p)).join('')}
+                        </div>` : ''}
+                    </section>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        window.toggleCatMore = (slugId, total) => {
+            const el = document.getElementById('more-' + slugId);
+            const btn = document.getElementById('btn-' + slugId);
+            if (!el) return;
+            const isHidden = el.classList.contains('hidden');
+            el.classList.toggle('hidden');
+            if (btn) btn.textContent = isHidden ? 'Chiudi ↑' : `Vedi tutti (${total}) ↓`;
+            if (isHidden) lucide.createIcons();
+        };
+
+        function buildProductCard(p) {
+            let totalStock = 0;
+            if (p.variantsData && p.variantsData.length > 0) {
+                totalStock = p.variantsData.reduce((acc, v) => acc + (v.stock || 0), 0);
+            } else if (p.variantsStock && Object.keys(p.variantsStock).length > 0) {
+                totalStock = Object.values(p.variantsStock).reduce((a, b) => a + b, 0);
+            } else {
+                totalStock = (p.stock !== undefined) ? p.stock : 0;
+            }
+
+            const isSoldOut = totalStock <= 0 && !p.isService;
+            let priceDisplay = `€${p.price.toFixed(2)}`;
+            if (p.price < 0) priceDisplay = 'Su Preventivo';
+
+            let displayImage = (p.images && p.images[0]) ? p.images[0] : (p.image || 'https://via.placeholder.com/500');
+            if (p.variantsData && p.variantsData.length > 0) {
+                const fv = p.variantsData[0];
+                if (fv.images && fv.images.length > 0) displayImage = fv.images[0];
+                else if (fv.image) displayImage = fv.image;
+            }
+
+            return `
+                <div class="product-card group cursor-pointer ${isSoldOut ? 'out-of-stock' : ''}" onclick="showProduct('${p.id}')">
+                    <div class="relative aspect-square overflow-hidden bg-zinc-100 rounded-sm">
+                        <img src="${displayImage}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" loading="lazy">
+                        ${isSoldOut ?
+                            '<div class="absolute inset-0 flex items-center justify-center"><span class="sold-out-badge">Esaurito</span></div>' :
+                            '<div class="absolute bottom-4 right-4 bg-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition duration-500 shadow-xl"><i data-lucide="plus" class="w-4 h-4 text-black"></i></div>'
+                        }
+                    </div>
+                    <div class="mt-6 text-center">
+                        <p class="text-[8px] font-bold tracking-[0.4em] uppercase text-zinc-400 mb-2 italic">${p.category || ''}</p>
+                        <h3 class="serif font-bold text-lg mb-1 tracking-tight">${p.name}</h3>
+                        <p class="font-medium text-zinc-500 text-sm italic">${priceDisplay}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showProduct(id) {
+            const p = localProducts.find(prod => prod.id === id);
+            currentProductId = id;
+            selectedVariant = p.variants && p.variants.length > 0 ? p.variants[0] : "";
+
+            // Aggiorna URL per deep link e condivisione
+            history.replaceState(null, '', `?id=${id}`);
+
+            document.getElementById('detail-title').innerText = p.name;
+            document.getElementById('detail-description').innerText = p.description;
+
+            const priceEl = document.getElementById('detail-price');
+            const btn = document.getElementById('add-to-cart-btn');
+
+            if (p.price < 0) {
+                priceEl.innerText = "Su Preventivo";
+                btn.innerText = "Richiedi Valutazione";
+                btn.onclick = () => {
+                    const codeStr = p.internalCode ? ` (Codice: ${p.internalCode})` : "";
+                    window.openContactChoice(
+                        `Richiesta Preventivo - ${p.name}`,
+                        `Salve Atelier Boutique LM, vorrei richiedere informazioni/preventivo per il prodotto: ${p.name}${codeStr}.`
+                    );
+                };
+            } else {
+                priceEl.innerText = `€${p.price.toFixed(2)}`;
+                btn.innerText = "Aggiungi al carrello";
+                btn.onclick = () => addToCartCurrent();
+            }
+
+            document.getElementById('detail-breadcrumb-name').innerText = p.name;
+
+            // Populate metadata details
+            const brandCont = document.getElementById('detail-brand-container');
+            const brandEl = document.getElementById('detail-brand');
+            if (p.brand) { brandEl.innerText = p.brand; brandCont.classList.remove('hidden'); }
+            else { brandCont.classList.add('hidden'); }
+
+            const codeCont = document.getElementById('detail-code-container');
+            const codeEl = document.getElementById('detail-code');
+            if (p.internalCode) { codeEl.innerText = p.internalCode; codeCont.classList.remove('hidden'); }
+            else { codeCont.classList.add('hidden'); }
+
+            const originCont = document.getElementById('detail-origin-container');
+            const originEl = document.getElementById('detail-origin');
+            if (p.origin) { originEl.innerText = p.origin; originCont.classList.remove('hidden'); }
+            else { originCont.classList.add('hidden'); }
+
+            const condCont = document.getElementById('detail-condition-container');
+            const condEl = document.getElementById('detail-condition');
+            if (p.condition) { condEl.innerText = p.condition; condCont.classList.remove('hidden'); }
+            else { condCont.classList.add('hidden'); }
+
+            const matCont = document.getElementById('detail-material-container');
+            const matEl = document.getElementById('detail-material');
+            if (p.material) { matEl.innerText = p.material; matCont.classList.remove('hidden'); }
+            else { matCont.classList.add('hidden'); }
+
+            const serCont = document.getElementById('detail-serial-container');
+            const serEl = document.getElementById('detail-serial');
+            if (p.serial) { serEl.innerText = p.serial; serCont.classList.remove('hidden'); }
+            else { serCont.classList.add('hidden'); }
+
+            const noteCont = document.getElementById('detail-note-container');
+            const noteEl = document.getElementById('detail-note');
+            if (p.shortNote) { noteEl.innerText = p.shortNote; noteCont.classList.remove('hidden'); }
+            else { noteCont.classList.add('hidden'); }
+
+            // Check if first variant has specific image(s)
+            let startImage = p.images ? p.images[0] : '';
+            let currentImages = p.images || [];
+
+            if (p.variantsData && p.variantsData.length > 0) {
+                if (p.variantsData[0].images && p.variantsData[0].images.length > 0) {
+                    currentImages = p.variantsData[0].images;
+                    startImage = currentImages[0];
+                } else if (p.variantsData[0].image) {
+                    startImage = p.variantsData[0].image;
+                }
+            }
+            document.getElementById('detail-image-main').src = startImage || 'https://via.placeholder.com/500?text=No+Image';
+
+            const thumbs = document.getElementById('detail-thumbnails');
+            thumbs.innerHTML = currentImages.map((img, i) => `<img src="${img}" class="thumbnail aspect-square cursor-pointer border-2 border-transparent ${img === startImage ? 'active' : ''}" onclick="onThumbnailClick(this, '${img}', ${i})">`).join('');
+
+            const varContainer = document.getElementById('detail-variants');
+            if (p.variants && p.variants.length > 0) {
+                varContainer.innerHTML = `<label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block font-bold">${p.variantLabel}</label>
+                    <div class="grid grid-cols-2 gap-2 font-bold uppercase text-[9px] tracking-widest italic">
+                        ${p.variants.map((v, i) => {
+                    const vStock = p.variantsStock ? p.variantsStock[v] : 0;
+                    const isVSoldOut = vStock <= 0;
+                    return `
+                            <button onclick="onVariantClick(this, '${v}', ${i})" class="variant-btn border py-3 transition hover:border-black ${i === 0 ? 'bg-black text-white border-black' : ''} ${isVSoldOut ? 'sold-out' : ''}">
+                                ${v} ${isVSoldOut ? '(Esaurito)' : ''}
+                            </button>
+                        `}).join('')}
+                    </div>`;
+            } else varContainer.innerHTML = '';
+
+            const aiContainer = document.getElementById('ai-features-container');
+            if (p.price < 0) {
+                aiContainer.classList.add('hidden');
+            } else {
+                aiContainer.classList.remove('hidden');
+                document.getElementById('detail-story').innerText = "Scopri la storia e la provenienza di questo pezzo...";
+            }
+
+            updateDetailViewState();
+            showView('product');
+            lucide.createIcons();
+        }
+
+        // --- TRENDIU SYNC LOGIC ---
+
+        function onVariantClick(el, val, index) {
+            selectedVariant = val;
+
+            document.querySelectorAll('.variant-btn').forEach(b => {
+                b.classList.remove('bg-black', 'text-white', 'border-black');
+            });
+            el.classList.add('bg-black', 'text-white', 'border-black');
+
+            const p = localProducts.find(prod => prod.id === currentProductId);
+
+            // NEW LOGIC: Check variantsData first (Support Multiple Images)
+            if (p.variantsData && p.variantsData.length > index) {
+                const vData = p.variantsData[index];
+
+                // If variant has specific images (array), use them to replace the gallery
+                if (vData.images && vData.images.length > 0) {
+                    const mainImg = vData.images[0];
+                    document.getElementById('detail-image-main').src = mainImg;
+
+                    // Update Thumbnails
+                    const thumbs = document.getElementById('detail-thumbnails');
+                    thumbs.innerHTML = vData.images.map((img, i) =>
+                        `<img src="${img}" class="thumbnail aspect-square cursor-pointer border-2 border-transparent ${i === 0 ? 'active' : ''}" onclick="onThumbnailClick(this, '${img}', ${i})">`
+                    ).join('');
+
+                    updateDetailViewState();
+                    return;
+                }
+                // Fallback: single image in variantData
+                else if (vData.image) {
+                    document.getElementById('detail-image-main').src = vData.image;
+                    updateDetailViewState();
+                    return;
+                }
+            }
+
+            // FALLBACK LEGACY LOGIC
+            if (p && p.variantImageMap && p.variantImageMap[index] !== undefined) {
+                const imgIndex = p.variantImageMap[index];
+                if (p.images[imgIndex]) {
+                    document.getElementById('detail-image-main').src = p.images[imgIndex];
+                    document.querySelectorAll('.thumbnail').forEach((t, i) => {
+                        t.classList.toggle('active', i === imgIndex);
+                    });
+                }
+            }
+            updateDetailViewState();
+        }
+
+        function onThumbnailClick(el, src, imgIndex) {
+            document.getElementById('detail-image-main').src = src;
+            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            const p = localProducts.find(prod => prod.id === currentProductId);
+
+            // Reverse lookup for variantsData
+            if (p.variantsData) {
+                const vIndex = p.variantsData.findIndex(v => v.image === src);
+                if (vIndex !== -1 && p.variants[vIndex]) {
+                    selectedVariant = p.variants[vIndex];
+                    document.querySelectorAll('.variant-btn').forEach((b, i) => {
+                        if (i === vIndex) b.classList.add('bg-black', 'text-white', 'border-black');
+                        else b.classList.remove('bg-black', 'text-white', 'border-black');
+                    });
+                    updateDetailViewState();
+                    return;
+                }
+            }
+
+            // Legacy Reverse Lookup
+            if (p && p.variantImageMap) {
+                const variantIndex = p.variantImageMap.indexOf(imgIndex);
+                if (variantIndex !== -1 && p.variants[variantIndex]) {
+                    selectedVariant = p.variants[variantIndex];
+                    document.querySelectorAll('.variant-btn').forEach((b, i) => {
+                        if (i === variantIndex) b.classList.add('bg-black', 'text-white', 'border-black');
+                        else b.classList.remove('bg-black', 'text-white', 'border-black');
+                    });
+                    updateDetailViewState();
+                }
+            }
+        }
+
+        function updateDetailViewState() {
+            const p = localProducts.find(prod => prod.id === currentProductId);
+            const btn = document.getElementById('add-to-cart-btn');
+            const overlay = document.getElementById('detail-soldout-overlay');
+
+            if (p.price < 0) {
+                overlay.classList.add('hidden'); btn.disabled = false; return;
+            }
+
+            const vStock = p.variantsStock ? p.variantsStock[selectedVariant] : 0;
+
+            if (vStock <= 0) {
+                btn.disabled = true; btn.innerText = "Variante Esaurita";
+                overlay.classList.add('hidden');
+            } else {
+                btn.disabled = false; btn.innerText = "Aggiungi al carrello";
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function addToCartCurrent() {
+            const p = localProducts.find(prod => prod.id === currentProductId);
+            if (p) addToCart(p.name, p.price, selectedVariant);
+        }
+
+        function addToCart(n, p, v) {
+            const prod = localProducts.find(it => it.name === n);
+            const vStock = prod.variantsStock ? prod.variantsStock[v] : 0;
+
+            if (prod.price > 0 && vStock <= 0) { alert("Spiacenti, questa variante è esaurita."); return; }
+            cart.push({ id: prod.id, n, p, v }); updateCart(); toggleCart(true);
+        }
+
+        function updateCart() {
+            const count = document.getElementById('cart-count');
+            const items = document.getElementById('cart-items');
+            const total = document.getElementById('cart-total');
+            count.innerText = cart.length;
+            if (cart.length === 0) { items.innerHTML = '<p class="text-zinc-400 italic text-center py-20 font-light">Il carrello è vuoto.</p>'; total.innerText = '€0,00'; return; }
+            let sum = 0;
+            items.innerHTML = cart.map((it, i) => {
+                let priceDisplay = `€${it.p.toFixed(2)}`;
+                if (it.p < 0) priceDisplay = "Richiesta Preventivo";
+                if (it.p > 0) sum += it.p;
+                return `<div class="flex justify-between border-b border-zinc-50 pb-4"><div class="text-[10px] font-bold uppercase leading-relaxed">${it.n}<br><span class="text-zinc-400 italic">${it.v || ''}</span><br>${priceDisplay}</div><button onclick="cart.splice(${i},1);updateCart()" class="text-zinc-300 hover:text-black transition">X</button></div>`;
+            }).join('');
+            total.innerText = `€${sum.toFixed(2)}`;
+        }
+
+        async function checkout() {
+            if (cart.length === 0) return;
+            const btn = document.getElementById('checkout-btn');
+
+            const hasService = cart.some(item => item.p < 0);
+            if (hasService) {
+                const itemsStr = cart.map(item => `- ${item.n} (${item.v || 'Standard'}) - ${item.p < 0 ? 'Su Preventivo' : '€' + item.p.toFixed(2)}`).join('\n');
+                window.openContactChoice(
+                    "Richiesta Ordine Misto & Preventivo",
+                    `Salve Atelier Boutique LM, vorrei procedere con il seguente ordine:\n\n${itemsStr}\n\nAttendo dettagli per il pagamento e preventivo.`
+                );
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Verifica Stock...";
+            const item = cart[0];
+            const p = localProducts.find(pr => pr.id === item.id);
+            if (p && p.stripeUrl && p.stripeUrl.includes('buy.stripe.com')) {
+                const vStock = p.variantsStock ? p.variantsStock[item.v] : 0;
+
+                if (vStock > 0) {
+                    const success = await handleStockDecrement(p.id, item.v);
+                    if (success) {
+                        btn.innerText = "Reindirizzamento Stripe...";
+                        window.location.href = p.stripeUrl;
+                    } else {
+                        alert("Spiacenti, la variante selezionata è terminata durante la transazione.");
+                        btn.disabled = false; btn.innerText = "Procedi al pagamento";
+                    }
+                } else {
+                    alert("Variante esaurita.");
+                    btn.disabled = false; btn.innerText = "Procedi al pagamento";
+                }
+            } else {
+                alert("ATTENZIONE: Link di pagamento mancante o prodotto esaurito.");
+                btn.disabled = false; btn.innerText = "Procedi al pagamento";
+            }
+        }
+
+        function toggleMenu() { document.getElementById('mobile-menu').classList.toggle('translate-x-full'); }
+        function toggleCart(s) { document.getElementById('cart-sidebar').classList.toggle('translate-x-full', !s); }
+        function showView(v) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.toggle('active', s.id === `view-${v}`));
+            window.scrollTo(0, 0);
+            if (v === 'home') history.replaceState(null, '', window.location.pathname);
+        }
+        function openStylist() { document.getElementById('stylist-modal').classList.remove('hidden'); }
+        function closeStylist() { document.getElementById('stylist-modal').classList.add('hidden'); }
+
+        window.onload = () => {
+            renderSkeletons();
+            lucide.createIcons();
+
+            // Controlla ?ordine=ok (redirect da Stripe)
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('ordine') === 'ok') showThankYouBanner();
+
+            const checkFB = setInterval(() => {
+                if (window.fb) { clearInterval(checkFB); initDataSync(); }
+            }, 100);
+        };
+
+        // -------------------------------------------------------
+        // SKELETON LOADER
+        // -------------------------------------------------------
+        function renderSkeletons() {
+            const grid = document.getElementById('vetrina-grid');
+            const cats = document.getElementById('category-sections');
+            const skeletonCard = () => `
+                <div class="product-card">
+                    <div class="skeleton aspect-square w-full rounded-sm"></div>
+                    <div class="mt-6 text-center">
+                        <div class="skeleton h-2 w-16 mx-auto mb-3"></div>
+                        <div class="skeleton h-5 w-36 mx-auto mb-2"></div>
+                        <div class="skeleton h-3 w-20 mx-auto"></div>
+                    </div>
+                </div>`;
+            if (grid) grid.innerHTML = [1,2,3,4].map(skeletonCard).join('');
+            if (cats) cats.innerHTML = `
+                <section class="category-section">
+                    <div class="flex items-center gap-5 pb-6 border-b border-zinc-100 mb-8">
+                        <div class="skeleton w-20 h-20 rounded-xl shrink-0"></div>
+                        <div class="skeleton h-8 w-48 rounded"></div>
+                    </div>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+                        ${[1,2,3,4].map(skeletonCard).join('')}
+                    </div>
+                </section>`;
+        }
+
+        // -------------------------------------------------------
+        // SHARE BUTTON (Web Share API + fallback copia link)
+        // -------------------------------------------------------
+        function shareProduct() {
+            const p = localProducts.find(prod => prod.id === currentProductId);
+            if (!p) return;
+            const url = `${window.location.origin}${window.location.pathname}?id=${p.id}`;
+            const shareData = {
+                title: `${p.name} — Boutique LM`,
+                text: p.description
+                    ? `${p.description.slice(0, 100)}... — Boutique LM`
+                    : `Scopri ${p.name} su Boutique LM — luxury reselling Firenze`,
+                url
+            };
+            if (navigator.share) {
+                navigator.share(shareData).catch(() => {});
+            } else {
+                // Fallback: copia link negli appunti
+                navigator.clipboard.writeText(url).then(() => {
+                    const btn = document.getElementById('share-btn');
+                    const orig = btn.innerHTML;
+                    btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 inline mr-1"></i> Link copiato!';
+                    lucide.createIcons();
+                    setTimeout(() => { btn.innerHTML = orig; lucide.createIcons(); }, 2500);
+                }).catch(() => alert('Copia il link: ' + url));
+            }
+        }
+
+        // -------------------------------------------------------
+        // BANNER RINGRAZIAMENTO ORDINE (?ordine=ok)
+        // -------------------------------------------------------
+        function showThankYouBanner() {
+            const banner = document.createElement('div');
+            banner.className = 'fixed top-20 left-1/2 z-[200] bg-zinc-900 text-white px-6 py-5 rounded-2xl shadow-2xl flex items-center gap-4 animate-slide-down max-w-sm w-[90vw]';
+            banner.style.transform = 'translateX(-50%)';
+            banner.innerHTML = `
+                <span class="text-3xl shrink-0">✅</span>
+                <div class="flex-1">
+                    <p class="font-bold text-sm uppercase tracking-widest mb-1">Ordine completato!</p>
+                    <p class="text-xs text-zinc-400 font-light leading-relaxed">Grazie per aver scelto Boutique LM. Riceverai una conferma a breve.</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="shrink-0 text-zinc-500 hover:text-white transition text-lg font-bold ml-2">✕</button>
+            `;
+            document.body.appendChild(banner);
+            setTimeout(() => { if (banner.parentElement) banner.remove(); }, 9000);
+            history.replaceState(null, '', window.location.pathname);
+        }
+    </script>
+
+    <!-- ==================== ADMIN PANEL (STORAGE ENABLED) ==================== -->
+    <div id="adminModal" class="hidden fixed inset-0 bg-black/80 z-[9999] items-center justify-center p-4">
+        <div class="bg-white w-full h-full md:h-[90vh] md:max-w-5xl md:rounded-2xl flex flex-col overflow-hidden shadow-2xl border border-zinc-200 animate-fadeIn">
+            <!-- HEADER -->
+            <div class="sticky top-0 bg-white border-b border-zinc-200 px-6 py-4 flex justify-between items-center z-10 shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🛡️</span>
+                    <h2 class="text-lg md:text-xl font-bold tracking-tight uppercase serif">Admin Console</h2>
+                </div>
+                <button onclick="closeAdminPanel()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 text-xl font-bold transition">&times;</button>
+            </div>
+
+            <div id="adminContent" class="p-6 overflow-y-auto flex-1">
+                <!-- LOGIN FORM -->
+                <div id="loginForm">
+                    <div class="max-w-sm mx-auto text-center py-8">
+                        <div class="mb-6 inline-block p-4 bg-zinc-50 rounded-full border border-zinc-100">
+                            <svg class="w-8 h-8 text-zinc-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold mb-2 text-zinc-900">Accesso Richiesto</h3>
+                        <p class="text-sm text-zinc-500 mb-8">Area riservata amministrazione</p>
+
+                        <div id="loginError"
+                            class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-xs font-bold mb-4 border border-red-100 flex items-center gap-2">
+                            <span>⚠️</span> <span id="loginErrorText">Errore</span>
+                        </div>
+
+                        <div class="space-y-4 text-left">
+                            <div>
+                                <label class="block text-xs font-bold mb-1 uppercase text-zinc-500 ml-1">Email</label>
+                                <input type="email" id="adminEmail"
+                                    class="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg text-sm"
+                                    placeholder="admin@..." value="admin@boutiquelm.com">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-bold mb-1 uppercase text-zinc-500 ml-1">Password</label>
+                                <input type="password" id="adminPassword"
+                                    class="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg text-sm"
+                                    placeholder="••••••••" onkeypress="if(event.key==='Enter') loginAdmin()">
+                            </div>
+                            <button onclick="loginAdmin()" id="loginBtn"
+                                class="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-zinc-200">ENTRA</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DASHBOARD -->
+                <div id="adminDashboard" class="hidden">
+                    <div class="flex justify-between items-center mb-6 bg-zinc-50 p-4 rounded-lg border border-zinc-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                            <span class="text-sm font-medium text-zinc-600" id="adminEmailDisplay">Admin</span>
+                        </div>
+                        <button onclick="logoutAdmin()" class="text-xs font-bold text-red-500 hover:text-red-700 hover:underline uppercase tracking-wider">DISCONNETTI</button>
+                    </div>
+
+                    <!-- TAB BAR -->
+                    <div class="flex border-b border-zinc-200 mb-6 text-xs md:text-sm font-bold uppercase tracking-wider shrink-0">
+                        <button onclick="switchAdminTab('new-product')" id="tabBtn-new-product" class="flex-1 py-3 text-center border-b-2 border-black text-black transition">Nuovo Prodotto</button>
+                        <button onclick="switchAdminTab('inventory')" id="tabBtn-inventory" class="flex-1 py-3 text-center border-b-2 border-transparent text-zinc-400 hover:text-black transition">Inventario</button>
+                        <button onclick="switchAdminTab('categories')" id="tabBtn-categories" class="flex-1 py-3 text-center border-b-2 border-transparent text-zinc-400 hover:text-black transition">Categorie</button>
+                        <button onclick="switchAdminTab('services')" id="tabBtn-services" class="flex-1 py-3 text-center border-b-2 border-transparent text-zinc-400 hover:text-black transition">Servizi</button>
+                    </div>
+
+                    <!-- TAB 1: NEW PRODUCT / EDITOR -->
+                    <div id="tabContent-new-product" class="admin-tab-content space-y-6">
+                        <!-- Configurazione Globale (AI & Categorie) -->
+                        <div class="p-4 bg-zinc-50 rounded-lg border border-zinc-200">
+                            <h3 class="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-3">⚙️ Configurazione Globale</h3>
+
+                            <!-- AI Key -->
+                            <div class="flex gap-2 mb-4">
+                                <input type="text" id="adminAiKey" class="w-full px-3 py-2 text-xs border rounded"
+                                    placeholder="Gemini API Key per Trendiu AI">
+                                <button onclick="saveSettings()"
+                                    class="bg-zinc-800 text-white px-4 py-2 text-xs font-bold rounded hover:bg-zinc-900 transition">SALVA KEY</button>
+                            </div>
+
+                            <!-- Gestione Categorie -->
+                            <div class="border-t border-zinc-200 pt-3">
+                                <h4 class="text-[10px] font-bold uppercase text-zinc-400 mb-2">Gestione Categorie</h4>
+                                <div class="grid md:grid-cols-2 gap-2">
+                                    <select id="catRenameFrom" class="px-2 py-1.5 text-xs border rounded w-full bg-white">
+                                        <option value="">Scegli Categoria da Modificare...</option>
+                                        <!-- Populated by JS -->
+                                    </select>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="catRenameTo" class="w-full px-2 py-1.5 text-xs border rounded"
+                                            placeholder="Nuovo Nome (o vuoto per...)">
+                                        <button onclick="performCategoryRename()"
+                                            class="bg-zinc-800 hover:bg-black text-white px-3 py-1.5 text-xs font-bold rounded whitespace-nowrap transition">RINOMINA / UNISCI</button>
+                                    </div>
+                                </div>
+                                <p class="text-[9px] text-zinc-400 mt-1.5 italic">Per eliminare una categoria, rinominala in una esistente (unione) o cambia manualmente i prodotti.</p>
+                            </div>
+                        </div>
+
+                        <!-- Product Editor -->
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center border-b border-zinc-100 pb-2">
+                                <h3 class="text-sm font-bold uppercase tracking-widest text-zinc-400">Editor Prodotto</h3>
+                                <button onclick="clearFields()" class="text-xs text-blue-600 hover:text-blue-800 underline transition font-medium">Nuovo / Pulisci</button>
+                            </div>
+                            
+                            <div class="grid gap-4 bg-white">
+                                <!-- Row 1: Name & Internal Code -->
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Nome Prodotto *</label>
+                                        <input type="text" id="productName" oninput="triggerCodeGeneration(false)"
+                                            class="w-full px-3 py-2 border rounded hover:border-zinc-400 text-sm transition"
+                                            placeholder="es. Pouch Wild Vintage">
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between items-center mb-1">
+                                            <label class="block text-xs font-bold uppercase text-zinc-400 ml-1">Codice Interno</label>
+                                            <button type="button" onclick="triggerCodeGeneration(true)" class="text-[10px] font-bold text-zinc-500 hover:text-black transition flex items-center gap-1">
+                                                Genera 🔄
+                                            </button>
+                                        </div>
+                                        <input type="text" id="productInternalCode" oninput="window.isCodeManuallyEdited = true;"
+                                            class="w-full px-3 py-2 border rounded hover:border-zinc-400 text-sm transition"
+                                            placeholder="es. BLM-BOR-GU-001">
+                                    </div>
+                                </div>
+
+                                <!-- Row 2: Brand, Category, Status -->
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Brand / Marchio</label>
+                                        <input type="text" id="productBrand" oninput="triggerCodeGeneration(false)"
+                                            class="w-full px-3 py-2 border rounded hover:border-zinc-400 text-sm transition"
+                                            placeholder="es. Atelier LM">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Categoria *</label>
+                                        <div class="relative">
+                                            <select id="productCategorySelect" onchange="handleCategoryChange(this); triggerCodeGeneration(false);"
+                                                class="w-full px-3 py-2 border rounded appearance-none bg-white text-sm">
+                                                <option value="">Seleziona Categoria...</option>
+                                            </select>
+                                            <input type="text" id="productCategory" oninput="triggerCodeGeneration(false)"
+                                                class="hidden w-full px-3 py-2 border rounded mt-1 text-sm"
+                                                placeholder="Scrivi Nuova Categoria...">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Stato Articolo</label>
+                                        <select id="productStatus" class="w-full px-3 py-2 border rounded bg-white text-sm">
+                                            <option value="Disponibile">Disponibile</option>
+                                            <option value="Esaurito">Esaurito</option>
+                                            <option value="In Arrivo">In Arrivo</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Row 3: Origin, Condition, Serial -->
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Origine / Provenienza</label>
+                                        <input type="text" id="productOrigin"
+                                            class="w-full px-3 py-2 border rounded hover:border-zinc-400 text-sm transition"
+                                            placeholder="es. Firenze, Italia">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Condizione</label>
+                                        <input type="text" id="productCondition"
+                                            class="w-full px-3 py-2 border rounded hover:border-zinc-400 text-sm transition"
+                                            placeholder="es. Ottimo Stato (Upcycled)">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Seriale / Codice Sorgente</label>
+                                        <input type="text" id="productSerial"
+                                            class="w-full px-3 py-2 border rounded hover:border-zinc-400 text-sm transition"
+                                            placeholder="es. Serial N° 12345">
+                                    </div>
+                                </div>
+
+                                <!-- Row 4: Material & Short Note -->
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Materiale</label>
+                                        <input type="text" id="productMaterial"
+                                            class="w-full px-3 py-2 border rounded hover:border-zinc-400 text-sm transition"
+                                            placeholder="es. Pelle rigenerata & Canvas">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Nota Breve</label>
+                                        <input type="text" id="productShortNote"
+                                            class="w-full px-3 py-2 border rounded hover:border-zinc-400 text-sm transition"
+                                            placeholder="es. Dettagli in ottone dorato">
+                                    </div>
+                                </div>
+
+                                <!-- Row 5: Price, Stripe Link, Priority -->
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Prezzo € *</label>
+                                        <input type="number" id="productPrice" class="w-full px-3 py-2 border rounded text-sm"
+                                            placeholder="es. 150.00 (negativo per preventivo)" step="0.01">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Link Stripe</label>
+                                        <input type="text" id="productStripeLink" class="w-full px-3 py-2 border rounded text-sm"
+                                            placeholder="https://buy.stripe.com/...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Priorità Vetrina</label>
+                                        <input type="number" id="productPriority" class="w-full px-3 py-2 border rounded text-sm"
+                                            placeholder="0" title="Più alto = appare prima">
+                                    </div>
+                                </div>
+
+                                <!-- Row 6: Description -->
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Descrizione Articolo</label>
+                                    <textarea id="productDescription" class="w-full px-3 py-2 border rounded text-sm"
+                                        placeholder="Descrizione del prodotto (supporta Markdown basilare)" rows="3"></textarea>
+                                </div>
+
+                                <!-- Row 7: Upload Foto (PRIMA delle varianti, più prominente) -->
+                                <div class="rounded-2xl border-2 border-dashed border-zinc-200 bg-zinc-50 p-6">
+                                    <div class="text-center mb-4">
+                                        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        </div>
+                                        <p class="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-1">Foto del Prodotto</p>
+                                        <p class="text-[10px] text-zinc-400">JPG, PNG, WEBP — puoi caricare più foto</p>
+                                    </div>
+
+                                    <!-- Area upload grande touch-friendly -->
+                                    <label for="imageInput" id="uploadDropZone" class="flex flex-col items-center justify-center w-full min-h-[80px] border-2 border-dashed border-zinc-300 rounded-xl bg-white cursor-pointer hover:border-black hover:bg-zinc-50 transition mb-3">
+                                        <span class="text-sm font-bold text-zinc-700 py-4">📸 Tocca per scegliere le foto</span>
+                                        <input type="file" id="imageInput" accept="image/*" multiple class="hidden">
+                                    </label>
+
+                                    <!-- Bottone carica grande -->
+                                    <button onclick="uploadImage()" id="uploadBtn"
+                                        class="w-full bg-black text-white py-4 rounded-xl text-sm font-bold tracking-widest uppercase hover:bg-zinc-800 transition mb-3">
+                                        ⬆️ Carica sul Cloud
+                                    </button>
+
+                                    <!-- progress bar -->
+                                    <div id="uploadProgressContainer" class="hidden w-full bg-gray-200 rounded-full h-2 mb-3">
+                                        <div id="uploadProgressBar" class="bg-green-500 h-2 rounded-full transition-all" style="width: 0%"></div>
+                                    </div>
+
+                                    <!-- URL nascosto -->
+                                    <input type="text" id="productImage"
+                                        class="hidden"
+                                        placeholder="URL immagine" readonly>
+
+                                    <!-- Preview Foto -->
+                                    <div id="imagePreviewContainer" class="flex gap-3 flex-wrap mt-1 justify-center"></div>
+                                </div>
+
+                                <!-- Row 8: Varianti (COLLASSABILI — opzionale) -->
+                                <div class="border border-zinc-200 rounded-xl overflow-hidden">
+                                    <button type="button" onclick="toggleVariantsPanel()" class="w-full flex items-center justify-between px-4 py-3 bg-zinc-50 text-xs font-bold uppercase tracking-wider text-zinc-500 hover:bg-zinc-100 transition">
+                                        <span>⚙️ Varianti & Stock <span class="text-zinc-400 font-normal normal-case">(opzionale — per pezzi unici lascia 1)</span></span>
+                                        <svg id="variantsChevron" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                    </button>
+                                    <div id="variantsPanelContent" class="hidden px-4 pb-4 pt-3 space-y-3">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400 shrink-0">Etichetta:</label>
+                                            <input type="text" id="productVariantLabel"
+                                                class="text-xs border px-2 py-1 rounded flex-1 bg-white"
+                                                placeholder="es. Colore, Taglia">
+                                        </div>
+                                        <div id="variantsListEditor" class="space-y-2"></div>
+                                        <button onclick="addVariantLine()"
+                                            class="text-xs font-bold text-zinc-800 border border-zinc-800 px-3 py-2 rounded-lg hover:bg-zinc-900 hover:text-white transition w-full">+ AGGIUNGI VARIANTE</button>
+                                        <div id="simpleStockContainer" class="border-t pt-3">
+                                            <label class="block text-xs font-bold mb-1 uppercase text-zinc-400">Stock (pezzi disponibili)</label>
+                                            <input type="number" id="productSimpleStock"
+                                                class="w-28 px-3 py-2 border rounded text-sm" placeholder="Qt." value="1">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Hidden fields for compatibility -->
+                                <input type="hidden" id="productSizes">
+
+                                <button onclick="saveProduct()" id="saveBtn"
+                                    class="w-full bg-black hover:bg-zinc-800 text-white font-bold py-5 rounded-2xl transition shadow-xl mt-2 uppercase text-sm tracking-widest sticky bottom-4 z-10">💾 SALVA NEL DATABASE</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: INVENTORY -->
+                    <div id="tabContent-inventory" class="admin-tab-content hidden space-y-6">
+                        <!-- Search & Quick Actions -->
+                        <div class="flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center bg-zinc-50 p-4 rounded-xl border border-zinc-100">
+                            <div class="relative flex-1 max-w-sm">
+                                <input type="text" id="inventorySearch" oninput="renderList()" 
+                                    class="w-full pl-3 pr-8 py-2 border rounded-lg text-sm focus:border-black outline-none transition" 
+                                    placeholder="Cerca per nome, categoria o codice...">
+                            </div>
+                            <div class="flex gap-2 flex-wrap">
+                                <button onclick="exportInventoryToCsv()" class="px-3 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition font-medium text-xs uppercase tracking-wider flex items-center gap-1">Esporta CSV 📥</button>
+                                <button onclick="loadAdminProducts()" class="px-3 py-2 border rounded-lg hover:bg-zinc-100 transition text-zinc-600 font-medium text-xs uppercase tracking-wider">Aggiorna</button>
+                                <button onclick="switchAdminTab('new-product'); clearFields();" 
+                                    class="bg-black text-white px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-zinc-800 transition">+ Nuovo Prodotto</button>
+                            </div>
+                        </div>
+
+                        <!-- Products Card Container -->
+                        <div id="inventoryContainer" class="space-y-3">
+                            <!-- Populated dynamically with mobile friendly cards -->
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: CATEGORIE -->
+                    <div id="tabContent-categories" class="admin-tab-content hidden space-y-6">
+                        <div class="p-5 bg-zinc-50 rounded-xl border border-zinc-100">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-zinc-900 mb-2">Gestione Categorie Storefront</h3>
+                            <p class="text-xs text-zinc-600 leading-relaxed">
+                                Qui puoi impostare l'<strong>ordine</strong>, la <strong>foto copertina</strong> e la <strong>visibilità</strong> di ogni categoria nella home. Le categorie vengono lette automaticamente dai tuoi prodotti.
+                            </p>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-xs font-bold uppercase tracking-widest text-zinc-400">Categorie dal Catalogo</h4>
+                            <button onclick="saveCategoryConfig()" id="saveCatBtn"
+                                class="bg-black text-white px-4 py-2 text-xs font-bold rounded-lg uppercase tracking-wider hover:bg-zinc-800 transition">
+                                💾 Salva Configurazione
+                            </button>
+                        </div>
+
+                        <div id="categoriesAdminContainer" class="space-y-3">
+                            <p class="text-center text-zinc-400 italic py-4 text-sm">Caricamento categorie...</p>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: SERVICES -->
+                    <div id="tabContent-services" class="admin-tab-content hidden space-y-6">
+                        <div class="p-5 bg-zinc-50 rounded-xl border border-zinc-100">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-zinc-900 mb-2">Gestione Servizi Atelier</h3>
+                            <p class="text-xs text-zinc-600 leading-relaxed">
+                                I servizi dell'Atelier (es. Restauro, Valutazioni) sono prodotti speciali con prezzo negativo (es. <strong>-1</strong>), visualizzati nello storefront come <strong>"Su Preventivo"</strong>. 
+                                Quando i clienti vi fanno clic sopra o procedono al pagamento, vengono invitati a contattare l'Atelier per email.
+                            </p>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-xs font-bold uppercase tracking-widest text-zinc-400">Servizi Catalogo</h4>
+                            <div class="flex gap-2">
+                                <button onclick="initializeDefaultServices()" 
+                                    class="border border-zinc-300 text-zinc-700 hover:bg-zinc-100 px-3 py-1.5 text-xs font-bold rounded-lg uppercase tracking-wider transition">Inizializza Default</button>
+                                <button onclick="createServiceItem()" 
+                                    class="bg-black text-white hover:bg-zinc-800 px-3 py-1.5 text-xs font-bold rounded-lg uppercase tracking-wider transition">+ Nuovo Servizio</button>
+                            </div>
+                        </div>
+
+                        <div id="servicesContainer" class="grid gap-4 sm:grid-cols-2">
+                            <!-- Service Cards -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // ==================== BOUTIQUE LM CORE (STORAGE EDITION) ====================
+        let adminDb, adminAuth, adminStorage, currentUser;
+        let adminProducts = [];
+        let currentEditId = null;
+
+        // INIT & URL HASH & TABS
+        function openAdminPanel() {
+            const modal = document.getElementById('adminModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeAdminPanel() {
+            const modal = document.getElementById('adminModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+            if (window.location.hash === '#admin') {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            // Logout automatico alla chiusura: evita che la sessione persista nel browser
+            if (window.fb && window.fb.auth) {
+                window.fb.signOut(window.fb.auth).catch(() => {});
+            }
+        }
+
+        // Il pannello admin si apre SOLO tramite click esplicito sul link nel footer.
+        // NON si apre automaticamente al caricamento, anche se c'è un hash o una sessione attiva.
+        window.addEventListener('load', () => {
+            // Pulisce l'hash se era #admin, senza aprire il pannello
+            if (window.location.hash === '#admin') {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+        });
+        
+        window.addEventListener('hashchange', () => {
+            if (window.location.hash === '#admin') {
+                openAdminPanel();
+            } else {
+                const modal = document.getElementById('adminModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    closeAdminPanel();
+                }
+            }
+        });
+
+        window.switchAdminTab = (tabId) => {
+            document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id^="tabBtn-"]').forEach(btn => {
+                btn.classList.remove('border-black', 'text-black');
+                btn.classList.add('border-transparent', 'text-zinc-400');
+            });
+
+            const targetContent = document.getElementById(`tabContent-${tabId}`);
+            if (targetContent) targetContent.classList.remove('hidden');
+
+            const targetBtn = document.getElementById(`tabBtn-${tabId}`);
+            if (targetBtn) {
+                targetBtn.classList.remove('border-transparent', 'text-zinc-400');
+                targetBtn.classList.add('border-black', 'text-black');
+            }
+
+            if (tabId === 'inventory') {
+                renderList();
+            } else if (tabId === 'services') {
+                renderServices();
+            } else if (tabId === 'categories') {
+                renderCategoriesAdmin();
+            }
+        }
+
+        // POLL FOR FIREBASE (Robusto e sicuro)
+        const initAdminInterval = setInterval(async () => {
+            if (window.fb) {
+                clearInterval(initAdminInterval);
+
+                adminDb = window.fb.db;
+                adminAuth = window.fb.auth;
+                adminStorage = window.fb.storage;
+
+                // SICUREZZA: distruggi SEMPRE la sessione in cache al caricamento pagina.
+                // L'admin deve loggarsi ogni volta che apre il pannello.
+                await window.fb.signOut(adminAuth).catch(() => {});
+
+                // Monitor Auth (si attiva solo dopo login esplicito)
+                window.fb.onAuthStateChanged(adminAuth, (user) => {
+                    currentUser = user;
+                    if (user) {
+                        document.getElementById("loginForm").classList.add("hidden");
+                        document.getElementById("adminDashboard").classList.remove("hidden");
+                        document.getElementById("adminEmailDisplay").textContent = user.email;
+                        switchAdminTab('inventory');
+                        loadAdminProducts();
+                        loadSettings();
+                        loadCategoryConfigAdmin();
+                    } else {
+                        document.getElementById("loginForm").classList.remove("hidden");
+                        document.getElementById("adminDashboard").classList.add("hidden");
+                    }
+                });
+            }
+        }, 500);
+
+        // LOGIN
+        async function loginAdmin() {
+            const email = document.getElementById("adminEmail").value;
+            const pass = document.getElementById("adminPassword").value;
+            const btn = document.getElementById("loginBtn");
+            const err = document.getElementById("loginError");
+
+            if (!window.fb) { alert("Firebase non ancora pronto. Riprova tra poco."); return; }
+
+            btn.textContent = "Verifica in corso...";
+            btn.disabled = true;
+            err.classList.add("hidden");
+
+            try {
+                await window.fb.signInWithEmailAndPassword(adminAuth, email, pass);
+            } catch (e) {
+                console.error(e);
+                document.getElementById("loginErrorText").textContent = "Credenziali non valide o errore di rete";
+                err.classList.remove("hidden");
+            } finally {
+                btn.textContent = "ENTRA";
+                btn.disabled = false;
+            }
+        }
+        function logoutAdmin() { window.fb.signOut(adminAuth); }
+
+        // DATABASE LIST
+        async function loadAdminProducts() {
+            try {
+                // Percorso corretto della collection pubblica
+                const snap = await window.fb.getDocs(window.fb.collection(adminDb, "artifacts", window.fb.appId, "public", "data", "products"));
+
+                adminProducts = [];
+                snap.forEach(doc => adminProducts.push({ id: doc.id, ...doc.data() }));
+                
+                // Render list or services based on active tab
+                const activeTab = document.querySelector('.admin-tab-content:not(.hidden)');
+                if (activeTab) {
+                    if (activeTab.id === 'tabContent-inventory') {
+                        renderList();
+                    } else if (activeTab.id === 'tabContent-services') {
+                        renderServices();
+                    } else if (activeTab.id === 'tabContent-categories') {
+                        renderCategoriesAdmin();
+                    }
+                }
+                
+                populateAdminCategories();
+            } catch (e) { console.error("Errore caricamento prodotti admin:", e); }
+        }
+
+        async function loadSettings() {
+            try {
+                const docRef = window.fb.doc(adminDb, "artifacts", window.fb.appId, "config", "settings");
+                const snap = await window.fb.getDoc(docRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (data.geminiKey) {
+                        const aiKeyInput = document.getElementById("adminAiKey");
+                        if (aiKeyInput) aiKeyInput.value = data.geminiKey;
+                        // Inietta la chiave se mancante
+                        if (!apiKey || apiKey === "") {
+                            console.log("🔑 API Key iniettata da DB");
+                            // Tentativo di override globale fallirà se const
+                        }
+                    }
+                }
+            } catch (e) { console.error("Settings error:", e); }
+        }
+
+        async function saveSettings() {
+            const key = document.getElementById("adminAiKey").value;
+            try {
+                const docRef = window.fb.doc(adminDb, "artifacts", window.fb.appId, "config", "settings");
+                await window.fb.setDoc(docRef, { geminiKey: key }, { merge: true });
+                alert("Impostazioni salvate! Ricarica la pagina per attivare l'AI.");
+            } catch (e) { alert("Errore settings: " + e.message); }
+        }
+
+        function renderList() {
+            const container = document.getElementById("inventoryContainer");
+            if (!container) return;
+
+            const searchVal = document.getElementById("inventorySearch") ? document.getElementById("inventorySearch").value.toLowerCase().trim() : "";
+
+            let filtered = adminProducts.filter(p => {
+                const name = (p.name || "").toLowerCase();
+                const category = (p.category || "").toLowerCase();
+                const code = (p.internalCode || "").toLowerCase();
+                return name.includes(searchVal) || category.includes(searchVal) || code.includes(searchVal);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-center text-zinc-400 italic py-8 text-sm">Nessun prodotto trovato.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(p => {
+                let stockTotal = 0;
+                if (p.variantsData && p.variantsData.length > 0) {
+                    stockTotal = p.variantsData.reduce((acc, v) => acc + (v.stock || 0), 0);
+                } else if (p.variantsStock && Object.keys(p.variantsStock).length > 0) {
+                    stockTotal = Object.values(p.variantsStock).reduce((a, b) => a + b, 0);
+                } else {
+                    stockTotal = (p.stock !== undefined) ? p.stock : 0;
+                }
+
+                let isSoldOut = stockTotal <= 0 && p.price >= 0;
+
+                let thumb = 'https://via.placeholder.com/100?text=No+Image';
+                if (p.images && p.images.length > 0) thumb = p.images[0];
+                else if (p.image) thumb = p.image;
+                
+                let priceDisplay = p.price < 0 ? "Su Preventivo" : `€${p.price.toFixed(2)}`;
+
+                const codeDisplay = p.internalCode ? `<span class="bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded text-[10px] font-mono">${p.internalCode}</span>` : '';
+                const brandDisplay = p.brand ? `<span class="text-xs font-semibold text-zinc-700">${p.brand}</span>` : '';
+                
+                let statusColor = "green";
+                let statusText = "Disponibile";
+                if (p.price < 0) {
+                    statusColor = "blue";
+                    statusText = "Servizio";
+                } else if (isSoldOut) {
+                    statusColor = "red";
+                    statusText = "Esaurito";
+                } else if (p.status) {
+                    statusText = p.status;
+                    if (p.status === "Esaurito") statusColor = "red";
+                    else if (p.status === "In Arrivo") statusColor = "amber";
+                }
+
+                return `
+                <div class="bg-white p-4 rounded-xl border border-zinc-100 shadow-sm hover:shadow-md transition flex gap-4 items-center">
+                    <img src="${thumb}" class="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover border bg-zinc-50 shrink-0">
+                    
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">${p.category || 'Generale'}</span>
+                            ${codeDisplay}
+                        </div>
+                        <h4 class="font-bold text-zinc-900 text-sm sm:text-base truncate leading-tight">${p.name}</h4>
+                        <div class="flex items-center gap-2 mt-1 flex-wrap">
+                            ${brandDisplay}
+                            <span class="text-xs text-zinc-500 font-medium">${priceDisplay}</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="bg-${statusColor}-50 text-${statusColor}-700 px-2 py-0.5 rounded-full text-[10px] font-bold border border-${statusColor}-100">
+                                ${statusText}
+                            </span>
+                            ${p.price >= 0 ? `
+                            <span class="text-[10px] font-medium text-zinc-500">
+                                Stock: <strong class="${stockTotal > 0 ? 'text-zinc-800' : 'text-red-500'}">${stockTotal}</strong>
+                            </span>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-2 shrink-0 border-l pl-4 self-stretch justify-center">
+                        <button onclick="editItem('${p.id}'); switchAdminTab('new-product');" class="p-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition flex items-center justify-center" title="Modifica">
+                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteItem('${p.id}')" class="p-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center justify-center" title="Elimina">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join("");
+            lucide.createIcons();
+        }
+
+        function renderServices() {
+            const container = document.getElementById("servicesContainer");
+            if (!container) return;
+
+            const services = adminProducts.filter(p => p.category === "Atelier Services" || p.price < 0);
+
+            if (services.length === 0) {
+                container.innerHTML = `
+                <div class="col-span-full text-center py-8 bg-zinc-50 rounded-lg border border-dashed border-zinc-200">
+                    <p class="text-zinc-400 italic text-sm mb-4">Nessun servizio configurato.</p>
+                    <button onclick="initializeDefaultServices()" class="bg-zinc-900 text-white px-4 py-2 text-xs font-bold uppercase tracking-wider rounded hover:bg-zinc-800 transition">Inizializza Servizi Default</button>
+                </div>`;
+                return;
+            }
+
+            container.innerHTML = services.map(s => {
+                let thumb = 'https://via.placeholder.com/80?text=Servizio';
+                if (s.images && s.images.length > 0) thumb = s.images[0];
+                else if (s.image) thumb = s.image;
+
+                return `
+                <div class="bg-white p-4 rounded-xl border border-zinc-100 shadow-sm flex gap-4 items-start hover:shadow-md transition">
+                    <img src="${thumb}" class="w-16 h-16 rounded-lg object-cover bg-zinc-50 border shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1">${s.brand || 'ATELIER'}</div>
+                        <h4 class="font-bold text-zinc-900 text-sm truncate leading-tight">${s.name}</h4>
+                        <p class="text-xs text-zinc-500 mt-1 line-clamp-2 italic">${s.description || 'Nessuna descrizione.'}</p>
+                        <div class="mt-2 flex gap-2 items-center flex-wrap">
+                            <span class="bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded text-[10px] font-bold">Su Preventivo</span>
+                            ${s.internalCode ? `<span class="bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded text-[9px] font-mono">${s.internalCode}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex gap-1 shrink-0">
+                        <button onclick="editItem('${s.id}'); switchAdminTab('new-product');" class="p-2 text-blue-600 hover:bg-blue-50 rounded transition" title="Modifica">
+                            <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="deleteItem('${s.id}')" class="p-2 text-red-600 hover:bg-red-50 rounded transition" title="Elimina">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join("");
+            lucide.createIcons();
+        }
+
+        window.createServiceItem = () => {
+            clearFields();
+            document.getElementById("productName").value = "Servizio Restauro ...";
+            document.getElementById("productPrice").value = "-1";
+            document.getElementById("productCategorySelect").value = "Atelier Services";
+            document.getElementById("productSimpleStock").value = "1";
+            document.getElementById("productDescription").value = "Descrivi qui i dettagli del servizio offerto per l'upcycling...";
+            switchAdminTab('new-product');
+            handleCategoryChange(document.getElementById("productCategorySelect"));
+        }
+
+        async function initializeDefaultServices() {
+            if (!confirm("Vuoi creare i 4 servizi di base (Restauro, Preventivo, Valutazione, Richiesta Custom)?")) return;
+            const defaults = [
+                {
+                    name: "Restauro & Rigenerazione",
+                    brand: "Atelier LM",
+                    category: "Atelier Services",
+                    price: -1,
+                    description: "Servizio professionale di restauro e rigenerazione per borse e accessori di lusso. Ridona splendore e integrità ai tuoi pezzi vintage.",
+                    stock: 1,
+                    variantsData: [],
+                    variantsStock: {},
+                    variants: [],
+                    image: "https://d5968b-0f.myshopify.com/cdn/shop/files/6A893521-1136-4A6A-936C-315968B46633.jpg?v=1764622012&width=800",
+                    images: ["https://d5968b-0f.myshopify.com/cdn/shop/files/6A893521-1136-4A6A-936C-315968B46633.jpg?v=1764622012&width=800"],
+                    priority: 10,
+                    internalCode: "SERV-REST",
+                    origin: "Firenze, Italia",
+                    condition: "N/A",
+                    serial: "N/A",
+                    material: "Pelle & Tessuto",
+                    status: "Disponibile",
+                    shortNote: "A partire da preventivo",
+                    isService: true
+                },
+                {
+                    name: "Preventivo Personalizzato",
+                    brand: "Atelier LM",
+                    category: "Atelier Services",
+                    price: -1,
+                    description: "Richiedi un preventivo dettagliato per la lavorazione personalizzata o la trasformazione dei tuoi materiali di pregio.",
+                    stock: 1,
+                    variantsData: [],
+                    variantsStock: {},
+                    variants: [],
+                    image: "https://d5968b-0f.myshopify.com/cdn/shop/files/1FA82E27-73FC-41B3-AF73-672E17B731F4.jpg?v=1764622013&width=1200",
+                    images: ["https://d5968b-0f.myshopify.com/cdn/shop/files/1FA82E27-73FC-41B3-AF73-672E17B731F4.jpg?v=1764622013&width=1200"],
+                    priority: 8,
+                    internalCode: "SERV-PREV",
+                    origin: "Firenze, Italia",
+                    condition: "N/A",
+                    serial: "N/A",
+                    material: "Materiali vari",
+                    status: "Disponibile",
+                    shortNote: "Senza impegno",
+                    isService: true
+                },
+                {
+                    name: "Valutazione Vintage Luxury",
+                    brand: "Atelier LM",
+                    category: "Atelier Services",
+                    price: -1,
+                    description: "I nostri esperti effettuano una valutazione dell'autenticità e dello stato di conservazione del tuo articolo di lusso.",
+                    stock: 1,
+                    variantsData: [],
+                    variantsStock: {},
+                    variants: [],
+                    image: "https://d5968b-0f.myshopify.com/cdn/shop/files/2B425B25-C43A-4E1A-8479-C153047367A3.jpg?v=1763753581&width=800",
+                    images: ["https://d5968b-0f.myshopify.com/cdn/shop/files/2B425B25-C43A-4E1A-8479-C153047367A3.jpg?v=1763753581&width=800"],
+                    priority: 6,
+                    internalCode: "SERV-VALU",
+                    origin: "Firenze, Italia",
+                    condition: "N/A",
+                    serial: "N/A",
+                    material: "Pelle & Tela",
+                    status: "Disponibile",
+                    shortNote: "Verifica autenticità",
+                    isService: true
+                },
+                {
+                    name: "Richiesta Custom",
+                    brand: "Atelier LM",
+                    category: "Atelier Services",
+                    price: -1,
+                    description: "Hai un'idea specifica o desideri un accessorio creato su misura partendo da materiali d'archivio? Sottoponici la tua richiesta.",
+                    stock: 1,
+                    variantsData: [],
+                    variantsStock: {},
+                    variants: [],
+                    image: "https://d5968b-0f.myshopify.com/cdn/shop/files/LM1.jpg?v=1709109014&width=600",
+                    images: ["https://d5968b-0f.myshopify.com/cdn/shop/files/LM1.jpg?v=1709109014&width=600"],
+                    priority: 4,
+                    internalCode: "SERV-CUST",
+                    origin: "Firenze, Italia",
+                    condition: "N/A",
+                    serial: "N/A",
+                    material: "Custom",
+                    status: "Disponibile",
+                    shortNote: "Su misura",
+                    isService: true
+                }
+            ];
+
+            try {
+                for (const item of defaults) {
+                    await window.fb.addDoc(window.fb.collection(adminDb, "artifacts", window.fb.appId, "public", "data", "products"), {
+                        ...item,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+                alert("Servizi inizializzati con successo!");
+                loadAdminProducts();
+            } catch (e) {
+                alert("Errore inizializzazione: " + e.message);
+            }
+        }
+
+        // ==================== CATEGORIES ADMIN TAB ====================
+        // Local editable copy of category config for the admin tab
+        let adminCategoryConfig = {};
+
+        function renderCategoriesAdmin() {
+            const container = document.getElementById('categoriesAdminContainer');
+            if (!container) return;
+
+            // Get unique non-service categories from products
+            const catSet = new Set();
+            adminProducts.filter(p => !p.isService && p.category).forEach(p => catSet.add(p.category));
+
+            if (catSet.size === 0) {
+                container.innerHTML = '<p class="text-center text-zinc-400 italic py-4 text-sm">Nessuna categoria trovata. Aggiungi prima dei prodotti.</p>';
+                return;
+            }
+
+            // Merge with current config
+            catSet.forEach(cat => {
+                if (!adminCategoryConfig[cat]) {
+                    adminCategoryConfig[cat] = { order: 99, coverImage: '', visible: true };
+                }
+            });
+
+            // Sort by order
+            const sorted = Array.from(catSet).sort((a, b) => {
+                const oA = Number(adminCategoryConfig[a]?.order ?? 99);
+                const oB = Number(adminCategoryConfig[b]?.order ?? 99);
+                return oA - oB || a.localeCompare(b);
+            });
+
+            const productCountMap = {};
+            adminProducts.filter(p => !p.isService).forEach(p => {
+                if (p.category) productCountMap[p.category] = (productCountMap[p.category] || 0) + 1;
+            });
+
+            container.innerHTML = sorted.map(cat => {
+                const cfg = adminCategoryConfig[cat] || {};
+                const count = productCountMap[cat] || 0;
+                const catKey = cat.replace(/[^a-z0-9]/gi, '_');
+                const isVisible = cfg.visible !== false;
+                const cover = cfg.coverImage || '';
+                const order = cfg.order || 99;
+
+                return `
+                <div class="bg-white border border-zinc-100 rounded-xl p-4 shadow-sm hover:shadow-md transition" id="catrow-${catKey}">
+                    <div class="flex items-center gap-4">
+                        <!-- Thumbnail -->
+                        <div class="w-14 h-14 rounded-lg overflow-hidden bg-zinc-100 border border-zinc-200 shrink-0 relative group cursor-pointer" onclick="triggerCatCoverUpload('${cat}')">
+                            ${cover ? `<img src="${cover}" class="w-full h-full object-cover" id="catimg-${catKey}">` : `<div class="w-full h-full flex items-center justify-center text-zinc-300" id="catimg-${catKey}"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>`}
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-[9px] font-bold">📷 FOTO</div>
+                        </div>
+
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h4 class="font-bold text-zinc-900 text-sm">${cat}</h4>
+                                <span class="text-[9px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded font-bold">${count} prod.</span>
+                            </div>
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <label class="text-[9px] font-bold uppercase text-zinc-400">Ordine:</label>
+                                <input type="number" value="${order}" min="1" max="99"
+                                    onchange="adminCategoryConfig['${cat}'].order = parseInt(this.value) || 99"
+                                    class="w-16 px-2 py-1 text-xs border rounded text-center">
+                                <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                                    <div class="relative">
+                                        <input type="checkbox" class="sr-only" ${isVisible ? 'checked' : ''}
+                                            onchange="adminCategoryConfig['${cat}'].visible = this.checked">
+                                        <div class="w-9 h-5 rounded-full transition ${isVisible ? 'bg-black' : 'bg-zinc-300'}" id="toggle-${catKey}"></div>
+                                        <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition transform ${isVisible ? 'translate-x-4' : ''}"></div>
+                                    </div>
+                                    <span class="text-[9px] font-bold uppercase text-zinc-500">${isVisible ? 'Visibile' : 'Nascosta'}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    ${cover ? `<div class="mt-2 flex items-center gap-2"><span class="text-[9px] text-zinc-400 truncate flex-1">${cover}</span><button onclick="adminCategoryConfig['${cat}'].coverImage=''; renderCategoriesAdmin();" class="text-[9px] text-red-500 hover:underline">Rimuovi</button></div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        async function saveCategoryConfig() {
+            const btn = document.getElementById('saveCatBtn');
+            if (!btn) return;
+            btn.textContent = 'Salvataggio...';
+            btn.disabled = true;
+
+            try {
+                const docRef = window.fb.doc(adminDb, 'artifacts', window.fb.appId, 'config', 'categories');
+                await window.fb.setDoc(docRef, adminCategoryConfig);
+                btn.textContent = '✅ Salvato!';
+                setTimeout(() => { btn.textContent = '💾 Salva Configurazione'; btn.disabled = false; }, 2000);
+            } catch (e) {
+                alert('Errore salvataggio categorie: ' + e.message);
+                btn.textContent = '💾 Salva Configurazione';
+                btn.disabled = false;
+            }
+        }
+
+        // Upload cover image for a category
+        let pendingCatCoverName = null;
+        function triggerCatCoverUpload(catName) {
+            pendingCatCoverName = catName;
+            // Reuse the hidden file input, redirect upload to category cover
+            currentUploadCallback = (url) => {
+                if (pendingCatCoverName) {
+                    if (!adminCategoryConfig[pendingCatCoverName]) adminCategoryConfig[pendingCatCoverName] = { order: 99, visible: true };
+                    adminCategoryConfig[pendingCatCoverName].coverImage = url;
+                    pendingCatCoverName = null;
+                    renderCategoriesAdmin();
+                }
+                currentUploadCallback = null;
+            };
+            document.getElementById('imageInput').click();
+        }
+
+        // Load category config from Firestore into adminCategoryConfig
+        async function loadCategoryConfigAdmin() {
+            try {
+                const docRef = window.fb.doc(adminDb, 'artifacts', window.fb.appId, 'config', 'categories');
+                const snap = await window.fb.getDoc(docRef);
+                if (snap.exists()) {
+                    adminCategoryConfig = snap.data();
+                }
+            } catch (e) {
+                console.info('Nessun config categorie nel DB — si usa default.');
+            }
+        }
+
+        // CATEGORY MANAGEMENT
+        async function performCategoryRename() {
+            const oldCat = document.getElementById("catRenameFrom").value;
+            const newCat = document.getElementById("catRenameTo").value.trim();
+
+            if (!oldCat) { alert("Seleziona una categoria da modificare."); return; }
+            if (!newCat) { alert("Inserisci il nuovo nome."); return; }
+
+            if (!confirm(`Tutti i prodotti "${oldCat}" diventeranno "${newCat}". Confermi?`)) return;
+
+            const productsToUpdate = adminProducts.filter(p => p.category === oldCat);
+            if (productsToUpdate.length === 0) { alert("Nessuno prodotto trovato."); return; }
+
+            const batch = window.fb.writeBatch(window.fb.db);
+            productsToUpdate.forEach(p => {
+                const docRef = window.fb.doc(window.fb.adminDb, "artifacts", window.fb.appId, "public", "data", "products", p.id);
+                batch.update(docRef, { category: newCat });
+            });
+
+            try {
+                await batch.commit();
+                alert(`Fatto! ${productsToUpdate.length} prodotti aggiornati.`);
+                // UI will update automatically via snapshot listener
+                document.getElementById("catRenameTo").value = "";
+            } catch (e) {
+                alert("Errore durante la rinomina: " + e.message);
+            }
+        }
+
+        function populateAdminCategories() {
+            const categories = new Set();
+            adminProducts.forEach(p => {
+                if (p.category) categories.add(p.category);
+            });
+
+            // Populate Product Selection
+            const select = document.getElementById("productCategorySelect");
+            if (select) {
+                // Save current selection if editing
+                const currentVal = select.value;
+                select.innerHTML = '<option value="">Seleziona Categoria...</option>';
+                // Standard categories
+                const standards = [
+                    "Borse & Pouch", 
+                    "Tech Luxury", 
+                    "Abbigliamento", 
+                    "Scarpe", 
+                    "Pantaloni", 
+                    "Felpe & Maglie", 
+                    "Giacche & Cappotti", 
+                    "T-Shirt & Top", 
+                    "Piccola Pelletteria", 
+                    "Accessori", 
+                    "Atelier Services", 
+                    "Special"
+                ];
+                standards.forEach(c => categories.add(c));
+
+                Array.from(categories).sort().forEach(c => {
+                    const opt = document.createElement("option");
+                    opt.value = c;
+                    opt.textContent = c;
+                    select.appendChild(opt);
+                });
+
+                const optNew = document.createElement("option");
+                optNew.value = "NEW_CATEGORY";
+                optNew.textContent = "➕ Nuova Categoria...";
+                select.appendChild(optNew);
+
+                if (currentVal && Array.from(select.options).some(o => o.value === currentVal)) select.value = currentVal;
+            }
+
+            // Populate Rename Tool
+            const renameSelect = document.getElementById("catRenameFrom");
+            if (renameSelect) {
+                renameSelect.innerHTML = '<option value="">Scegli Categoria...</option>';
+                // Only show categories that actually exist in products (not standards if empty)
+                const usedCategories = new Set();
+                adminProducts.forEach(p => { if (p.category) usedCategories.add(p.category); });
+
+                Array.from(usedCategories).sort().forEach(c => {
+                    const opt = document.createElement("option");
+                    opt.value = c;
+                    opt.textContent = c;
+                    renameSelect.appendChild(opt);
+                });
+            }
+        }
+
+        window.handleCategoryChange = (el) => {
+            const input = document.getElementById("productCategory");
+            if (el.value === "NEW_CATEGORY") {
+                input.classList.remove("hidden");
+                input.value = "";
+                input.focus();
+            } else {
+                input.classList.add("hidden");
+                input.value = el.value; // Store value in hidden input for saving logic simplicity? Or handle in saveProduct
+            }
+        }
+
+        // VARIANT UI LOGIC
+        let tempVariants = [];
+
+        function renderVariantsInput() {
+            const container = document.getElementById("variantsListEditor");
+            if (!container) return;
+
+            // Note: We avoid aggressive logging to console to reduce lag if multiple updates
+            container.innerHTML = tempVariants.map((v, i) => {
+                const imagesHtml = v.images && v.images.length > 0
+                    ? v.images.map((img, imgIdx) => `<img src="${img}" class="w-8 h-8 object-cover rounded border border-zinc-200" title="Img ${imgIdx + 1}">`).join('')
+                    : '<span class="text-[8px] text-zinc-300">NO FOTO</span>';
+
+                return `
+                <div class="flex flex-col gap-2 mb-3 p-3 bg-white border rounded-sm shadow-sm transition">
+                    <div class="flex gap-2 items-center">
+                        <input type="text" value="${v.name}" onchange="updateVariant(${i}, 'name', this.value)" class="w-1/2 px-2 py-1 text-xs border rounded font-bold" placeholder="Nome (es. Rosso)">
+                        <input type="number" value="${v.stock}" onchange="updateVariant(${i}, 'stock', this.value)" class="w-1/4 px-2 py-1 text-xs border rounded" placeholder="Qt.">
+                        <button onclick="removeVariant(${i})" class="text-red-500 hover:text-red-700 p-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 mt-1 bg-zinc-50 p-2 rounded border border-zinc-100">
+                        <div class="flex gap-1 overflow-x-auto max-w-[150px] scrollbar-hide">
+                            ${imagesHtml}
+                        </div>
+                        <div class="flex-1 flex flex-col items-end">
+                            <button onclick="triggerVariantUpload(${i})" class="text-[9px] font-bold bg-zinc-800 text-white hover:bg-black px-2 py-1 rounded shadow-sm transition whitespace-nowrap">📸 AGGIUNGI FOTO</button>
+                            ${v.images && v.images.length > 0 ? `<button onclick="clearVariantImages(${i})" class="text-[8px] text-red-400 mt-1 hover:underline">Rimuovi tutte</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `}).join("");
+
+            if (tempVariants.length === 0) container.innerHTML = '<p class="text-[10px] text-zinc-400 italic text-center py-2">Nessuna variante. Usa lo stock semplice qui sotto se prodotto unico.</p>';
+
+            // Toggle visibility of Simple Stock input based on variants presence
+            const simpleStockDiv = document.getElementById("simpleStockContainer");
+            if (simpleStockDiv) {
+                if (tempVariants.length > 0) simpleStockDiv.classList.add("hidden");
+                else simpleStockDiv.classList.remove("hidden");
+            }
+
+            lucide.createIcons();
+        }
+
+        window.toggleVariantsPanel = () => {
+            const panel = document.getElementById('variantsPanelContent');
+            const chevron = document.getElementById('variantsChevron');
+            if (panel) {
+                panel.classList.toggle('hidden');
+                if (chevron) chevron.style.transform = panel.classList.contains('hidden') ? '' : 'rotate(180deg)';
+            }
+        };
+
+        window.addVariantLine = () => {
+            // Auto-apri il pannello quando si aggiunge la prima variante
+            const panel = document.getElementById('variantsPanelContent');
+            if (panel && panel.classList.contains('hidden')) window.toggleVariantsPanel();
+            tempVariants.push({ name: "", stock: 1, images: [] });
+            renderVariantsInput();
+        }
+        window.removeVariant = (i) => {
+            tempVariants.splice(i, 1);
+            renderVariantsInput();
+        }
+        window.updateVariant = (i, field, val) => {
+            tempVariants[i][field] = field === 'stock' ? parseInt(val) : val;
+        }
+        window.clearVariantImages = (i) => {
+            if (confirm("Rimuovere tutte le foto di questa variante?")) {
+                tempVariants[i].images = [];
+                renderVariantsInput();
+            }
+        }
+
+        // Mantiene una referenza all'input file e al callback corrente
+        let currentUploadCallback = null;
+
+        function triggerVariantUpload(index) {
+            // Salva il contesto: stiamo caricando per la variante X
+            currentUploadCallback = (url) => {
+                if (!tempVariants[index].images) tempVariants[index].images = [];
+                tempVariants[index].images.push(url);
+                renderVariantsInput();
+            };
+            // Simula click sul file input principale (quello nascosto o visibile)
+            document.getElementById("imageInput").click();
+        }
+
+        async function uploadGeneric() {
+            const fileInput = document.getElementById("imageInput");
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) return;
+            if (!adminStorage) { alert("Attendi il caricamento completo del pannello..."); return; }
+
+            const files = Array.from(fileInput.files);
+            const btn = document.getElementById("uploadBtn"); 
+            const bar = document.getElementById("uploadProgressBar");
+            const container = document.getElementById("uploadProgressContainer");
+            const urlInput = document.getElementById("productImage");
+
+            const origBtnText = btn ? btn.innerHTML : "⬆️ Carica sul Cloud";
+            
+            // Disabilita controlli per prevenire conflitti durante l'upload
+            if (btn) btn.disabled = true;
+            fileInput.disabled = true;
+
+            if (container) container.classList.remove("hidden");
+
+            const { ref, uploadBytes, getDownloadURL } = window.fb;
+            const totalFiles = files.length;
+
+            try {
+                for (let i = 0; i < totalFiles; i++) {
+                    const file = files[i];
+                    
+                    if (btn) btn.innerHTML = `Caricamento (${i + 1}/${totalFiles})...`;
+                    if (bar) {
+                        bar.style.backgroundColor = "";
+                        bar.style.width = `${Math.round((i / totalFiles) * 100)}%`;
+                    }
+
+                    // Genera nome file sicuro
+                    const saneName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+                    const fileName = `${Date.now()}_${saneName}`;
+                    const storageRef = ref(adminStorage, 'products/' + fileName);
+
+                    // Tentativo Upload
+                    await uploadBytes(storageRef, file);
+
+                    const url = await getDownloadURL(storageRef);
+
+                    // --- GESTIONE DESTINAZIONE URL ---
+                    if (currentUploadCallback) {
+                        // Caso A: Era per una variante specifica
+                        currentUploadCallback(url);
+                    } else {
+                        // Caso B: Era un upload generico (pulsante principale)
+                        const currentVal = urlInput.value;
+                        // Aggiungi in coda se c'è già qualcosa
+                        if (currentVal) urlInput.value = currentVal + "," + url;
+                        else urlInput.value = url;
+                        window.renderImagePreviews();
+                    }
+                }
+            } catch (error) {
+                console.error("Upload error:", error);
+                let msg = "Errore durante l'upload.\n\n";
+                if (error.code === 'storage/unauthorized') msg += "Permesso negato. Controlla le regole di Firebase Storage.";
+                else if (error.code === 'storage/canceled') msg += "Upload cancellato.";
+                else if (error.message && error.message.includes('CORS')) msg += "Errore CORS: Il server non accetta richieste da questo dominio.";
+                else msg += error.message;
+
+                alert(msg);
+                if (bar) bar.style.backgroundColor = "red";
+            } finally {
+                // Ripristino stato iniziale dei controlli
+                currentUploadCallback = null;
+                fileInput.value = "";
+                fileInput.disabled = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origBtnText;
+                }
+                
+                if (bar) bar.style.width = "100%";
+                if (container) {
+                    setTimeout(() => {
+                        container.classList.add("hidden");
+                        if (bar) {
+                            bar.style.width = "0%";
+                            bar.style.backgroundColor = "";
+                        }
+                    }, 2000);
+                }
+            }
+        }
+
+        // SAVE PRODUCT
+        async function saveProduct() {
+            if (!currentUser) { alert("Sessione scaduta."); return; }
+            const btn = document.getElementById("saveBtn");
+            const originalText = btn.textContent;
+            btn.textContent = "SALVATAGGIO...";
+            btn.disabled = true;
+
+            // DETERMINE CATEGORY
+            const catSelect = document.getElementById("productCategorySelect");
+            const catInput = document.getElementById("productCategory");
+            let finalCategory = "";
+            if (catSelect.value === "NEW_CATEGORY") {
+                finalCategory = catInput.value.trim();
+            } else {
+                finalCategory = catSelect.value;
+            }
+            if (!finalCategory) finalCategory = "Gen"; // Default fallback
+
+            const variantsData = [];
+            const variantsStockMap = {};
+            const variantsList = [];
+
+            // Costruisci dati varianti puliti
+            tempVariants.forEach(v => {
+                if (v.name && v.name.trim() !== "") {
+                    let vImages = v.images || [];
+                    if (vImages.length === 0 && v.image) vImages.push(v.image);
+
+                    variantsData.push({
+                        name: v.name,
+                        stock: v.stock,
+                        images: vImages,
+                        image: vImages.length > 0 ? vImages[0] : ""
+                    });
+                    variantsStockMap[v.name] = v.stock;
+                    variantsList.push(v.name);
+                }
+            });
+
+            // Gestione Immagini
+            let mainImages = document.getElementById("productImage").value.split(',').map(s => s.trim()).filter(s => s !== "");
+
+            if (mainImages.length === 0) {
+                variantsData.forEach(v => {
+                    if (v.images && v.images.length > 0) {
+                        v.images.forEach(img => {
+                            if (!mainImages.includes(img)) mainImages.push(img);
+                        });
+                    }
+                });
+            }
+
+            const isService = (parseFloat(document.getElementById("productPrice").value) < 0 || finalCategory === "Atelier Services");
+
+            const data = {
+                name: document.getElementById("productName").value,
+                price: parseFloat(document.getElementById("productPrice").value) || 0,
+                stock: (variantsData.length > 0) ? 0 : (parseInt(document.getElementById("productSimpleStock").value) || 0),
+
+                variantsData: variantsData,
+                variantsStock: variantsStockMap,
+                variants: variantsList,
+                variantLabel: (document.getElementById("productVariantLabel") && document.getElementById("productVariantLabel").value) || "Variante",
+                description: document.getElementById("productDescription").value,
+                image: mainImages.length > 0 ? mainImages[0] : "",
+                images: mainImages,
+                stripeUrl: document.getElementById("productStripeLink").value,
+                priority: parseInt(document.getElementById("productPriority").value) || 0,
+                category: finalCategory,
+                isService: isService,
+
+                // New fields:
+                internalCode: document.getElementById("productInternalCode").value.trim(),
+                brand: document.getElementById("productBrand").value.trim(),
+                origin: document.getElementById("productOrigin").value.trim(),
+                condition: document.getElementById("productCondition").value.trim(),
+                serial: document.getElementById("productSerial").value.trim(),
+                material: document.getElementById("productMaterial").value.trim(),
+                status: document.getElementById("productStatus").value,
+                shortNote: document.getElementById("productShortNote").value.trim(),
+
+                lastEditor: currentUser.email,
+                updatedAt: new Date().toISOString()
+            };
+
+            // Controllo per evitare codici duplicati (Blocco totale)
+            if (data.internalCode) {
+                const dup = adminProducts.find(p => p.internalCode === data.internalCode && p.id !== currentEditId);
+                if (dup) {
+                    alert(`Errore: Il codice "${data.internalCode}" è già in uso per il prodotto "${dup.name}". Inserisci un codice unico per procedere.`);
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+            }
+
+            try {
+                if (currentEditId) {
+                    await window.fb.updateDoc(window.fb.doc(adminDb, "artifacts", window.fb.appId, "public", "data", "products", currentEditId), data);
+                } else {
+                    await window.fb.addDoc(window.fb.collection(adminDb, "artifacts", window.fb.appId, "public", "data", "products"), { ...data, createdAt: new Date().toISOString() });
+                }
+                alert("Salvato con successo!");
+                clearFields();
+                loadAdminProducts();
+            } catch (e) { alert("Errore Salvataggio: " + e.message); }
+            finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function uploadImage() {
+            // Redirect legacy call
+            await uploadGeneric();
+        }
+
+        // Bind upload event only once
+        const _uplInput = document.getElementById("imageInput");
+        if (_uplInput) _uplInput.onchange = uploadGeneric;
+
+        function editItem(id) {
+            const p = adminProducts.find(x => x.id === id);
+            currentEditId = id;
+            document.getElementById("productName").value = p.name || "";
+            document.getElementById("productPrice").value = p.price || 0;
+
+            // New fields populating:
+            const codeVal = p.internalCode || "";
+            document.getElementById("productInternalCode").value = codeVal;
+            window.isCodeManuallyEdited = codeVal !== "";
+            document.getElementById("productBrand").value = p.brand || "";
+            document.getElementById("productOrigin").value = p.origin || "";
+            document.getElementById("productCondition").value = p.condition || "";
+            document.getElementById("productSerial").value = p.serial || "";
+            document.getElementById("productMaterial").value = p.material || "";
+            document.getElementById("productStatus").value = p.status || "Disponibile";
+            document.getElementById("productShortNote").value = p.shortNote || "";
+
+            // Handle Category Edit
+            const catSelect = document.getElementById("productCategorySelect");
+            const catInput = document.getElementById("productCategory");
+
+            // Check if p.category exists in options
+            let folderOption = Array.from(catSelect.options).find(o => o.value === p.category);
+            if (folderOption) {
+                catSelect.value = p.category;
+                catInput.classList.add("hidden");
+            } else {
+                // Custom category
+                catSelect.value = "NEW_CATEGORY";
+                catInput.classList.remove("hidden");
+                catInput.value = p.category || "";
+            }
+
+            if (document.getElementById("productVariantLabel")) document.getElementById("productVariantLabel").value = p.variantLabel || "Variante";
+            document.getElementById("productImage").value = (p.images ? p.images.join(',') : p.image) || "";
+            window.renderImagePreviews();
+            document.getElementById("productStripeLink").value = p.stripeUrl || "";
+            document.getElementById("productPriority").value = p.priority || 0;
+            // Always pre-populate simple stock with what we have (fallback 0).
+            // If variants exist, this input will be hidden anyway.
+            document.getElementById("productSimpleStock").value = (p.stock !== undefined) ? p.stock : 0;
+
+            // Restore Variants
+            tempVariants = [];
+
+            // Priority 1: New variantsData structure (supports images)
+            if (p.variantsData && Array.isArray(p.variantsData)) {
+                tempVariants = p.variantsData.map(v => ({
+                    name: v.name,
+                    stock: v.stock,
+                    images: v.images || (v.image ? [v.image] : [])
+                }));
+            }
+            // Priority 2: Legacy variantsStock (map)
+            else if (p.variantsStock) {
+                for (const [key, val] of Object.entries(p.variantsStock)) {
+                    tempVariants.push({ name: key, stock: val, images: [] });
+                }
+            }
+            // Priority 3: Simple Stock
+            else if (p.stock) {
+                // Check if it's really a simple stock or just a legacy "Standard" variant
+                // Current logic: If NO variantsData and NO variantsStock, we assume simple stock.
+                // We DON'T push to tempVariants here anymore IF we want to use the simple stock input.
+                // However, legacy products might have "Standard" variant logic?
+                // Let's check: if stock exists but no variant structures, treat as Simple Stock.
+                if (!p.variantsData && !p.variantsStock) {
+                    document.getElementById("productSimpleStock").value = p.stock;
+                } else {
+                    tempVariants.push({ name: "Standard", stock: p.stock, images: [] });
+                }
+            } else {
+                // No stock info? Default 1 on simple input
+                document.getElementById("productSimpleStock").value = 1;
+            }
+
+            renderVariantsInput();
+        }
+
+        async function deleteItem(id) {
+            if (confirm("Eliminare definitivamente?")) {
+                await window.fb.deleteDoc(window.fb.doc(adminDb, "artifacts", window.fb.appId, "public", "data", "products", id));
+                loadAdminProducts();
+            }
+        }
+
+        function clearFields() {
+            document.getElementById("productName").value = "";
+            document.getElementById("productPrice").value = "";
+            window.isCodeManuallyEdited = false;
+
+            // Clear new fields
+            document.getElementById("productInternalCode").value = "";
+            document.getElementById("productBrand").value = "";
+            document.getElementById("productOrigin").value = "";
+            document.getElementById("productCondition").value = "";
+            document.getElementById("productSerial").value = "";
+            document.getElementById("productMaterial").value = "";
+            document.getElementById("productStatus").value = "Disponibile";
+            document.getElementById("productShortNote").value = "";
+
+            // Reset Dropdown
+            const catSelect = document.getElementById("productCategorySelect");
+            const catInput = document.getElementById("productCategory");
+            if (catSelect) catSelect.value = "";
+            if (catInput) {
+                catInput.value = "";
+                catInput.classList.add("hidden");
+            }
+
+            if (document.getElementById("productVariantLabel")) document.getElementById("productVariantLabel").value = "";
+            document.getElementById("productImage").value = "";
+            window.renderImagePreviews();
+            document.getElementById("productStripeLink").value = "";
+            document.getElementById("productPriority").value = "";
+            document.getElementById("productSimpleStock").value = "1"; // Reset stock default
+            const imgIn = document.getElementById("imageInput");
+            if (imgIn) imgIn.value = "";
+            tempVariants = [];
+            renderVariantsInput();
+            currentEditId = null;
+        }
+
+        // ==================== DYNAMIC PRODUCT CODE AUTO-GENERATION ====================
+        window.isCodeManuallyEdited = false;
+
+        window.getCategoryPrefix = function(category) {
+            if (!category) return "GEN";
+            const cat = category.trim().toLowerCase();
+            if (cat.includes("bors")) return "BOR";
+            if (cat.includes("tech")) return "TEC";
+            if (cat.includes("scar")) return "SCA";
+            if (cat.includes("pant")) return "PAN";
+            if (cat.includes("felp") || cat.includes("magl")) return "FEL";
+            if (cat.includes("giac") || cat.includes("capp")) return "GIA";
+            if (cat.includes("t-sh") || cat.includes("top")) return "TSH";
+            if (cat.includes("peller") || cat.includes("pelletteria")) return "PEL";
+            if (cat.includes("access")) return "ACC";
+            if (cat.includes("abbigl")) return "ABB";
+            if (cat.includes("serv")) return "SRV";
+            if (cat.includes("spec")) return "SPC";
+            
+            // Fallback: extract first 3 characters, sanitizing to A-Z
+            const sanitized = cat.toUpperCase().replace(/[^A-Z]/g, "");
+            if (sanitized.length >= 3) return sanitized.substring(0, 3);
+            return (sanitized + "GEN").substring(0, 3);
+        };
+
+        window.getBrandPrefix = function(brand) {
+            if (!brand) return "XX";
+            const clean = brand.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+            if (clean.length === 0) return "XX";
+            if (clean.length === 1) return clean + "X";
+            return clean.substring(0, 2);
+        };
+
+        window.triggerCodeGeneration = function(force = false) {
+            const codeInput = document.getElementById("productInternalCode");
+            if (!codeInput) return;
+
+            // If user has manually edited the code and we are not forcing, do not overwrite
+            if (!force && window.isCodeManuallyEdited) return;
+
+            // If name is empty, brand is empty and category is not selected, let's not auto-fill on empty input unless forced
+            const nameInput = document.getElementById("productName");
+            const brandInput = document.getElementById("productBrand");
+            const catSelect = document.getElementById("productCategorySelect");
+            const catInput = document.getElementById("productCategory");
+
+            let category = "";
+            if (catSelect && catSelect.value === "NEW_CATEGORY" && catInput) {
+                category = catInput.value;
+            } else if (catSelect) {
+                category = catSelect.value;
+            }
+
+            // Only auto-generate if there's some content in the form to avoid filling immediately on clearFields
+            const hasName = nameInput && nameInput.value.trim() !== "";
+            const hasBrand = brandInput && brandInput.value.trim() !== "";
+            const hasCategory = category && category.trim() !== "";
+
+            if (!force && !hasName && !hasBrand && !hasCategory) {
+                return;
+            }
+
+            // If forced, reset manually edited flag to allow subsequent auto-fills
+            if (force) {
+                window.isCodeManuallyEdited = false;
+            }
+
+            const prefix = window.getCategoryPrefix(category);
+            const brandCode = window.getBrandPrefix(brandInput ? brandInput.value : "");
+
+            // Calculate incremental number for this category in adminProducts
+            let maxNum = 0;
+            if (Array.isArray(adminProducts)) {
+                adminProducts.forEach(p => {
+                    // Exclude the current editing product to avoid self-incrementation
+                    if (currentEditId && p.id === currentEditId) return;
+
+                    // Match same category
+                    if (p.category === category && p.internalCode) {
+                        const parts = p.internalCode.split('-');
+                        if (parts.length >= 4) {
+                            const lastPart = parts[parts.length - 1];
+                            const num = parseInt(lastPart, 10);
+                            if (!isNaN(num) && num > maxNum) {
+                                maxNum = num;
+                            }
+                        }
+                    }
+                });
+            }
+
+            const nextIndex = String(maxNum + 1).padStart(3, '0');
+            codeInput.value = `BLM-${prefix}-${brandCode}-${nextIndex}`;
+        };
+
+        // ==================== VISUAL IMAGE PREVIEWS & MANAGEMENT ====================
+        window.renderImagePreviews = function() {
+            const container = document.getElementById("imagePreviewContainer");
+            if (!container) return;
+            const urlsVal = document.getElementById("productImage").value.trim();
+            if (!urlsVal) {
+                container.innerHTML = "";
+                return;
+            }
+            const urls = urlsVal.split(",").map(u => u.trim()).filter(u => u !== "");
+            container.innerHTML = urls.map((url, i) => `
+                <div class="relative w-16 h-16 border rounded bg-zinc-50 overflow-hidden shrink-0 group">
+                    <img src="${url}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeMainImage(${i})" class="absolute top-0 right-0 bg-red-500 text-white rounded-bl w-4.5 h-4.5 flex items-center justify-center text-[10px] hover:bg-red-700 transition" title="Rimuovi Foto">&times;</button>
+                </div>
+            `).join("");
+        };
+
+        window.removeMainImage = function(index) {
+            const input = document.getElementById("productImage");
+            if (!input) return;
+            const urls = input.value.split(",").map(u => u.trim()).filter(u => u !== "");
+            urls.splice(index, 1);
+            input.value = urls.join(",");
+            window.renderImagePreviews();
+        };
+
+        // ==================== EXPORT INVENTORY TO CSV ====================
+        window.exportInventoryToCsv = function() {
+            if (!Array.isArray(adminProducts) || adminProducts.length === 0) {
+                alert("Nessun prodotto nell'inventario da esportare.");
+                return;
+            }
+            
+            const headers = [
+                "Codice Interno",
+                "Nome",
+                "Categoria",
+                "Brand",
+                "Prezzo",
+                "Stock Totale",
+                "Condizione",
+                "Materiale",
+                "Origine",
+                "Stato",
+                "Seriale",
+                "Link Stripe"
+            ];
+            
+            const rows = adminProducts.map(p => {
+                let stockTotal = 0;
+                if (p.variantsData && p.variantsData.length > 0) {
+                    stockTotal = p.variantsData.reduce((acc, v) => acc + (v.stock || 0), 0);
+                } else if (p.variantsStock && Object.keys(p.variantsStock).length > 0) {
+                    stockTotal = Object.values(p.variantsStock).reduce((a, b) => a + b, 0);
+                } else {
+                    stockTotal = (p.stock !== undefined) ? p.stock : 0;
+                }
+                
+                const priceVal = p.price < 0 ? "Su Preventivo" : p.price.toFixed(2);
+                
+                return [
+                    p.internalCode || "",
+                    p.name || "",
+                    p.category || "",
+                    p.brand || "",
+                    priceVal,
+                    stockTotal,
+                    p.condition || "",
+                    p.material || "",
+                    p.origin || "",
+                    p.status || "",
+                    p.serial || "",
+                    p.stripeUrl || ""
+                ];
+            });
+            
+            // Format using Semicolon (Excel standards in Italy) and include BOM
+            const csvContent = [
+                headers.join(";"),
+                ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(";"))
+            ].join("\n");
+            
+            const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            const dateStr = new Date().toISOString().slice(0, 10);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `inventario_boutique_lm_${dateStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // ==================== WHATSAPP & EMAIL CONTACT CHOICE ====================
+        window.pendingContactData = { subject: "", body: "" };
+
+        window.openContactChoice = function(subject, body) {
+            window.pendingContactData = { subject, body };
+            const modal = document.getElementById("contact-choice-modal");
+            if (modal) {
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+                lucide.createIcons();
+            }
+        };
+
+        window.closeContactChoice = function() {
+            const modal = document.getElementById("contact-choice-modal");
+            if (modal) {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            }
+        };
+
+        window.sendContactChoice = function(method) {
+            const data = window.pendingContactData || { subject: "Richiesta Informazioni", body: "Salve, vorrei maggiori informazioni." };
+            const phone = "393931218244"; // Atelier WhatsApp
+            
+            if (method === "whatsapp") {
+                const text = encodeURIComponent(`*${data.subject}*\n\n${data.body}`);
+                window.open(`https://wa.me/${phone}?text=${text}`, "_blank");
+            } else {
+                const subject = encodeURIComponent(data.subject);
+                const body = encodeURIComponent(data.body);
+                window.location.href = `mailto:info@boutiquelm.it?subject=${subject}&body=${body}`;
+            }
+            window.closeContactChoice();
+        };
+    </script>
+
+</body>
+
+</html>

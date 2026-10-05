@@ -1,0 +1,26 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "firestore.rules",
+      "storage.rules",
+      "**/.*",
+      "**/node_modules/**",
+      "overview.md",
+      "README.md",
+      "TODO.md",
+      "instructions.md",
+      "deploy_website.cmd",
+      "start_server.cmd",
+      "index backup.html",
+      ".gitignore"
+    ]
+  }
+}

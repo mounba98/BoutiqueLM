@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if the user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Products (Public read, authenticated write)
+    match /artifacts/{appId}/public/data/products/{productId} {
+      allow read: if true;
+      allow write: if isAuth();
+    }
+
+    // Config/Settings (Authenticated read and write)
+    match /artifacts/{appId}/config/settings {
+      allow read, write: if isAuth();
+    }
+    
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

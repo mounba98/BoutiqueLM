@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boutique LM | Upcycled Luxury Handmade</title>
+    <meta name="description" content="Accessori di lusso upcycled realizzati a mano a Firenze. Dai nuova vita ai materiali iconici.">
+    
+    <!-- SOCIAL PREVIEW (Open Graph) -->
+    <meta property="og:title" content="Boutique LM | Upcycled Luxury Handmade">
+    <meta property="og:description" content="Pezzi unici realizzati a mano a Firenze recuperando materiali autentici di lusso. Scopri la collezione.">
+    <meta property="og:image" content="https://d5968b-0f.myshopify.com/cdn/shop/files/1FA82E27-73FC-41B3-AF73-672E17B731F4.jpg?v=1764622013&width=1200">
+    <meta property="og:url" content="https://boutiquelm.it">
+    <meta property="og:type" content="website">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- FIREBASE CONFIGURATION & INITIALIZATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // Trendiu: Aggiunto setDoc per l'upload iniziale dei prodotti
+        import { getFirestore, collection, doc, onSnapshot, query, updateDoc, increment, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        try {
+            // Se sei in locale senza config, questa parte viene saltata
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            
+            if (firebaseConfig) {
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const db = getFirestore(app);
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+                // Esponiamo setDoc per la funzione admin
+                window.fb = { db, auth, appId, collection, doc, onSnapshot, query, updateDoc, increment, getDoc, setDoc };
+
+                const initAuth = async () => {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                };
+                initAuth();
+            } else {
+                console.log("Modalità Locale: Firebase non configurato. Uso dati statici.");
+            }
+        } catch (e) {
+            console.log("Modalità Locale: Avvio con dati statici.");
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; scroll-behavior: smooth; }
+        .serif { font-family: 'Playfair Display', serif; }
+        .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .hero-gradient { background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://d5968b-0f.myshopify.com/cdn/shop/files/1FA82E27-73FC-41B3-AF73-672E17B731F4.jpg?v=1764622013&width=1500'); background-size: cover; background-position: center; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-marquee { display: inline-block; animation: marquee 30s linear infinite; }
+        .drawer { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .out-of-stock { filter: grayscale(1); opacity: 0.6; pointer-events: none; }
+        .sold-out-badge { background: #000; color: #fff; padding: 4px 12px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .ai-loading { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .thumbnail.active { border-color: black; opacity: 1; }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900">
+
+    <!-- NAVIGAZIONE PRINCIPALE -->
+    <nav class="fixed w-full z-50 glass-nav border-b border-zinc-100">
+        <div class="max-w-7xl mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
+            <button onclick="toggleMenu()" class="md:hidden p-2"><i data-lucide="menu"></i></button>
+            <div class="flex items-center cursor-pointer" onclick="showView('home')">
+                <span class="serif text-xl md:text-2xl font-bold tracking-tighter uppercase tracking-[0.2em]">Boutique LM</span>
+            </div>
+            <div class="hidden md:flex space-x-8 text-[10px] font-bold tracking-[0.2em] uppercase">
+                <a href="#prodotti" onclick="showView('home')" class="hover:text-zinc-500 transition">Collezione</a>
+                <a href="#storia" onclick="showView('home')" class="hover:text-zinc-500 transition">Filosofia</a>
+                <button onclick="openStylist()" class="text-zinc-900 font-bold italic border-b border-black">✨ AI STYLIST</button>
+            </div>
+            <button onclick="toggleCart(true)" class="relative p-2 hover:bg-zinc-100 rounded-full transition">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                <span id="cart-count" class="absolute -top-1 -right-1 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MENU LATERALE MOBILE -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] bg-white translate-x-full drawer md:hidden">
+        <div class="p-6">
+            <div class="flex justify-end mb-12"><button onclick="toggleMenu()" class="p-2 text-zinc-400"><i data-lucide="x" class="w-8 h-8"></i></button></div>
+            <div class="flex flex-col space-y-8 text-3xl serif font-bold text-zinc-900">
+                <a href="#" onclick="showView('home'); toggleMenu()">Home</a>
+                <a href="#prodotti" onclick="showView('home'); toggleMenu()">Collezione</a>
+                <a href="#storia" onclick="showView('home'); toggleMenu()">Filosofia</a>
+                <button onclick="openStylist(); toggleMenu()" class="text-left text-zinc-600">✨ AI Stylist</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE AI STYLIST -->
+    <div id="stylist-modal" class="fixed inset-0 z-[100] bg-black/60 hidden backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-zinc-100 flex justify-between items-center">
+                <h3 class="serif text-2xl font-bold">✨ AI Personal Stylist</h3>
+                <button onclick="closeStylist()" class="p-2"><i data-lucide="x"></i></button>
+            </div>
+            <div class="p-8">
+                <p class="text-xs text-zinc-400 uppercase tracking-widest mb-4">Powered by Trendiu AI</p>
+                <textarea id="stylist-input" class="w-full h-32 p-4 bg-zinc-50 border border-zinc-100 rounded-xl mb-6 text-sm focus:border-black outline-none transition" placeholder="Es: Cerco un regalo unico per una persona che ama il vintage..."></textarea>
+                <button onclick="getStylistAdvice()" id="stylist-btn" class="w-full bg-black text-white py-4 font-bold uppercase text-[10px] tracking-widest rounded-lg">Chiedi consiglio</button>
+                <div id="stylist-result" class="mt-8 hidden p-6 bg-zinc-50 rounded-xl text-sm italic border-l-4 border-black"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARRELLO -->
+    <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full md:w-[400px] z-[70] bg-white shadow-2xl translate-x-full drawer border-l border-zinc-100">
+        <div class="h-full flex flex-col p-6">
+            <div class="flex justify-between items-center mb-10 border-b pb-4">
+                <h2 class="serif text-2xl font-bold text-zinc-900 tracking-tighter">Il tuo carrello</h2>
+                <button onclick="toggleCart(false)" class="p-2 hover:bg-zinc-100 rounded-full transition"><i data-lucide="x"></i></button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto space-y-6">
+                <p class="text-zinc-400 italic text-center py-20 font-light">Il tuo carrello è vuoto.</p>
+            </div>
+            <div class="border-t border-zinc-200 pt-6 mt-4">
+                <div class="flex justify-between text-lg font-bold mb-6">
+                    <span>Totale</span>
+                    <span id="cart-total">€0,00</span>
+                </div>
+                <button onclick="checkout()" id="checkout-btn" class="w-full bg-black text-white py-5 font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg disabled:bg-zinc-400">
+                    Procedi al pagamento
+                </button>
+                <p class="text-[8px] text-center text-zinc-400 mt-4 uppercase tracking-widest text-overlay">Sincronizzazione Stock Attiva</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW: HOME -->
+    <main id="view-home" class="view-section active">
+        <section class="relative h-[85vh] md:h-screen flex items-center justify-center text-white hero-gradient px-4">
+            <div class="text-center max-w-4xl animate-fadeIn">
+                <span class="text-[10px] uppercase tracking-[0.6em] font-bold mb-6 block opacity-90">Firenze • Handmade Atelier</span>
+                <h1 class="serif text-4xl md:text-8xl font-bold mb-8 leading-tight">Lusso Rigenerato.</h1>
+                <p class="text-sm md:text-xl font-light mb-12 tracking-widest opacity-90 max-w-2xl mx-auto italic">Ogni pezzo racconta una storia di eleganza e recupero.</p>
+                <a href="#prodotti" class="bg-white text-black px-12 py-5 font-bold tracking-[0.2em] uppercase text-[10px] shadow-2xl hover:bg-zinc-100 transition">Esplora i Drop</a>
+            </div>
+        </section>
+
+        <div class="bg-black text-white py-4 overflow-hidden border-y border-white/5">
+            <div class="animate-marquee whitespace-nowrap">
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Pezzi Unici Upcycled</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Spedizione Express 24/48h</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">Atelier a Firenze</span>
+                <span class="mx-12 text-[10px] font-bold tracking-[0.4em] uppercase italic">100% Articoli Autentici</span>
+            </div>
+        </div>
+
+        <section id="prodotti" class="max-w-7xl mx-auto px-4 py-16 md:py-24">
+            <h2 class="serif text-4xl md:text-6xl font-bold mb-16 tracking-tighter">La Collezione</h2>
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
+                <!-- Prodotti dinamici -->
+            </div>
+        </section>
+
+        <section id="storia" class="bg-zinc-900 text-white py-24">
+            <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                <div class="relative group overflow-hidden">
+                    <img src="https://d5968b-0f.myshopify.com/cdn/shop/files/6A893521-1136-4A6A-936C-315968B46633.jpg?v=1764622012&width=800" class="w-full aspect-[4/5] object-cover grayscale opacity-60 group-hover:opacity-100 transition duration-1000">
+                </div>
+                <div class="max-w-xl">
+                    <span class="text-[10px] font-bold tracking-[0.5em] text-zinc-500 uppercase mb-8 block">La nostra visione</span>
+                    <h2 class="serif text-4xl md:text-6xl font-bold mb-10 leading-tight">L'arte del recupero fiorentino</h2>
+                    <p class="text-zinc-400 text-lg font-light leading-relaxed mb-10 italic">Recuperiamo borse e accessori che hanno terminato la loro vita utile per creare nuovi oggetti di desiderio.</p>
+                    <p class="serif italic text-white text-3xl pt-10 border-t border-white/10 tracking-tighter">"Poiché tutti se lo possono permettere ma non tutti lo possono avere."</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- VIEW: DETTAGLIO PRODOTTO -->
+    <main id="view-product" class="view-section pt-32 pb-24 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4">
+            <!-- NAVIGAZIONE INTERNA -->
+            <div class="flex items-center gap-2 text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400 mb-16">
+                <button onclick="showView('home')" class="hover:text-black transition">Home</button>
+                <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                <button onclick="showView('home')" class="hover:text-black transition">Collezione</button>
+                <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                <span class="text-black" id="detail-breadcrumb-name">Caricamento...</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
+                <!-- Gallery -->
+                <div class="space-y-6">
+                    <div class="relative overflow-hidden group">
+                        <img id="detail-image-main" src="" class="w-full aspect-square object-cover rounded-sm transition duration-700 group-hover:scale-105">
+                        <div id="detail-soldout-overlay" class="absolute inset-0 bg-white/40 backdrop-blur-[2px] hidden items-center justify-center">
+                            <span class="bg-black text-white px-8 py-4 font-bold tracking-widest uppercase text-xl serif italic">Esaurito</span>
+                        </div>
+                    </div>
+                    <div id="detail-thumbnails" class="grid grid-cols-4 gap-4"></div>
+                </div>
+
+                <!-- Info -->
+                <div class="sticky top-32 h-fit">
+                    <span class="text-[10px] font-bold tracking-[0.4em] uppercase text-zinc-400 mb-6 block italic">Trendiu Selected Atelier</span>
+                    <h1 id="detail-title" class="serif text-4xl md:text-6xl font-bold mb-6 text-zinc-900 leading-tight tracking-tighter">Nome Prodotto</h1>
+                    
+                    <div id="price-container">
+                        <p id="detail-price" class="text-3xl font-light mb-10 tracking-tight">€0,00</p>
+                    </div>
+                    
+                    <div class="prose prose-zinc mb-12">
+                        <p id="detail-description" class="text-zinc-500 leading-relaxed text-lg font-light italic"></p>
+                    </div>
+
+                    <div id="detail-variants" class="mb-12 space-y-6"></div>
+
+                    <!-- AI Features -->
+                    <div id="ai-features-container">
+                        <div class="bg-zinc-100 p-8 rounded-xl mb-6 border border-zinc-200/50 transition hover:shadow-md">
+                            <div class="flex items-center justify-between mb-6">
+                                <h4 class="text-[10px] font-bold tracking-[0.4em] uppercase text-zinc-400 italic">✨ Storie del Vintage</h4>
+                                <button onclick="generateProductStory()" id="story-btn" class="text-[9px] font-bold uppercase underline hover:text-black transition">Evoca Storia</button>
+                            </div>
+                            <p id="detail-story" class="text-sm text-zinc-600 leading-relaxed font-light italic">Scopri la possibile vita precedente di questo materiale iconico...</p>
+                        </div>
+
+                        <div class="bg-[#f0fdf4] p-8 rounded-xl mb-12 border border-green-100 transition hover:shadow-md">
+                            <div class="flex items-center justify-between mb-6">
+                                <h4 class="text-[10px] font-bold tracking-[0.4em] uppercase text-green-600 italic">✨ Impatto Sostenibile</h4>
+                                <button onclick="getEcoImpact()" id="eco-btn" class="text-[9px] font-bold uppercase underline hover:text-green-800 transition text-green-700">Calcola Risparmio</button>
+                            </div>
+                            <p id="eco-result" class="text-sm text-green-800 leading-relaxed font-light italic">Scopri quanta acqua e CO2 hai risparmiato scegliendo l'upcycling...</p>
+                        </div>
+                    </div>
+
+                    <button id="add-to-cart-btn" onclick="addToCartCurrent()" class="w-full bg-black text-white py-6 font-bold uppercase text-[11px] tracking-[0.3em] hover:bg-zinc-800 transition shadow-2xl disabled:bg-zinc-300">
+                        Aggiungi al carrello
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-zinc-50 border-t border-zinc-200 py-20 text-center">
+        <h2 class="serif text-2xl font-bold mb-8 uppercase tracking-widest text-zinc-900">BOUTIQUE LM</h2>
+        <div class="flex flex-col md:flex-row justify-center items-center gap-8 mb-12">
+            <a href="https://www.instagram.com/boutique_lm___" target="_blank" class="text-[10px] font-bold tracking-widest uppercase hover:text-zinc-400 transition text-zinc-600">Instagram</a>
+            <a href="https://www.tiktok.com/@boutique__lm" target="_blank" class="text-[10px] font-bold tracking-widest uppercase hover:text-zinc-400 transition text-zinc-600">TikTok</a>
+            <a href="mailto:info@boutiquelm.it" class="text-[10px] font-bold tracking-widest uppercase hover:text-zinc-400 transition text-zinc-600">info@boutiquelm.it</a>
+        </div>
+        
+        <!-- BUTTON ADMIN PER POPOLARE IL DB (Visibile solo se sai dov'è, o puoi nasconderlo con CSS) -->
+        <button onclick="adminPopulateDB()" class="text-[8px] text-zinc-300 hover:text-black transition uppercase tracking-widest mt-8">
+            Admin: Inizializza Database
+        </button>
+        
+        <p class="uppercase tracking-[0.5em] text-[9px] text-zinc-400 font-bold mt-4">Handmade with passion in Florence • 2025</p>
+    </footer>
+
+    <!-- WHATSAPP -->
+    <a href="https://wa.me/393331234567" target="_blank" class="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition z-[60] flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+    </a>
+
+    <script>
+        const apiKey = "";
+        let currentProductId = null;
+        let selectedVariant = "";
+        let localProducts = [];
+        let cart = [];
+
+        // ---------------------------------------------------------------------------------------
+        // ⚠️ GESTIONE PRODOTTI
+        // ---------------------------------------------------------------------------------------
+        const defaultProducts = [
+            {
+                id: "p1",
+                name: "Pouch Wild Signature",
+                price: 115.00,
+                variantsStock: { "Gucci Canvas": 1, "LV Monogram": 0 }, 
+                category: "Borse & Pouch",
+                images: ["https://d5968b-0f.myshopify.com/cdn/shop/files/2B425B25-C43A-4E1A-8479-C153047367A3.jpg?v=1763753581&width=800", "https://d5968b-0f.myshopify.com/cdn/shop/files/214396CF-9671-4084-897F-3BE80A91C1E5.jpg?v=1763753581&width=800"],
+                variants: ["Gucci Canvas", "LV Monogram"],
+                variantLabel: "Materia Prima",
+                variantImageMap: [0, 1], 
+                description: "Pouch realizzata con tela originale recuperata da borse vintage selezionate.",
+                stripeUrl: "INCOLLA_QUI_IL_LINK_STRIPE_DA_DASHBOARD" 
+            },
+            {
+                id: "p2",
+                name: "Cinturino Apple Watch",
+                price: 89.00,
+                variantsStock: { "Louis Vuitton": 5, "Gucci": 2 },
+                category: "Tech Luxury",
+                images: [
+                    "https://d5968b-0f.myshopify.com/cdn/shop/files/ABD16D69-EEDA-4B89-ADFB-D359337FBFA0.jpg?v=1763753295&width=800",
+                    "https://d5968b-0f.myshopify.com/cdn/shop/files/7E19D023-12B5-49B0-912E-B76D9F92734A.jpg?v=1763753296&width=800",
+                    "https://d5968b-0f.myshopify.com/cdn/shop/files/AE7B6892-52EF-4AC2-801D-14EFE417DD87.jpg?v=1763753295&width=800",
+                    "https://d5968b-0f.myshopify.com/cdn/shop/files/25B576E1-0C76-4F7B-888B-7C2BE2612C96.jpg?v=1763753723&width=800"
+                ],
+                variants: ["Louis Vuitton", "Gucci"],
+                variantLabel: "Texture",
+                variantImageMap: [0, 2],
+                description: "Cinturino compatibile Apple Watch realizzato artigianalmente recuperando tela originale da borse vintage.",
+                stripeUrl: "INCOLLA_QUI_IL_LINK_STRIPE_DA_DASHBOARD" 
+            },
+            {
+                id: "p3",
+                name: "Felpa Luxury Upcycled",
+                price: 44.50,
+                variantsStock: { "Small": 2, "Medium": 5, "Large": 0, "XL": 1 },
+                category: "Abbigliamento",
+                images: ["https://d5968b-0f.myshopify.com/cdn/shop/files/1758906489.jpg?v=1759160578&width=800", "https://d5968b-0f.myshopify.com/cdn/shop/files/1758906489_4.jpg?v=1759161687&width=800"],
+                variants: ["Small", "Medium", "Large", "XL"],
+                variantLabel: "Taglia",
+                variantImageMap: [], 
+                description: "Felpa in cotone organico ad alta grammatura con inserti in tela monogram autentica cuciti a mano.",
+                stripeUrl: "INCOLLA_QUI_IL_LINK_STRIPE_DA_DASHBOARD"
+            },
+            {
+                id: "p4",
+                name: "Portachiavi Upcycled",
+                price: 55.00,
+                variantsStock: { "Gold Hardware": 3, "Silver Hardware": 1 },
+                category: "Piccola Pelletteria",
+                images: ["https://d5968b-0f.myshopify.com/cdn/shop/collections/E3F1BEFB-87FC-4221-8537-45E09A8199DF.jpg?v=1764606631&width=800"],
+                variants: ["Gold Hardware", "Silver Hardware"],
+                variantLabel: "Minuteria",
+                description: "L'accessorio perfetto per aggiungere un tocco di lusso al tuo mazzo di chiavi.",
+                stripeUrl: "INCOLLA_QUI_IL_LINK_STRIPE_DA_DASHBOARD"
+            },
+            {
+                id: "p5",
+                name: "Portacarte Minimal",
+                price: 85.00,
+                variantsStock: { "Vintage GG": 2, "Classic Monogram": 0 },
+                category: "Piccola Pelletteria",
+                images: ["https://d5968b-0f.myshopify.com/cdn/shop/files/FullSizeRender_77cd1398-ce57-4be6-bc74-a485b43c3a3e.jpg?v=1764271873&width=800", "https://d5968b-0f.myshopify.com/cdn/shop/files/FullSizeRender.jpg?v=1764271911&width=800"],
+                variants: ["Vintage GG", "Classic Monogram"],
+                variantLabel: "Texture",
+                variantImageMap: [0, 1],
+                description: "Sottile, funzionale e progettato per durare. Questo portacarte ospita fino a 4 tessere e banconote centrali.",
+                stripeUrl: "INCOLLA_QUI_IL_LINK_STRIPE_DA_DASHBOARD"
+            },
+            {
+                id: "p6",
+                name: "Servizio di Restauro",
+                price: -1, 
+                variantsStock: { "Standard": 99 },
+                category: "Atelier Services",
+                images: ["https://d5968b-0f.myshopify.com/cdn/shop/files/6A893521-1136-4A6A-936C-315968B46633.jpg?v=1764622012&width=800"],
+                variants: [],
+                description: "Ridiamo vita ai tuoi pezzi del cuore. Un servizio artigianale personalizzato. Inviaci una foto per un preventivo gratuito.",
+                isService: true 
+            },
+            {
+                id: "p7",
+                name: "Gift Card Boutique",
+                price: 25.00,
+                variantsStock: { "€25": 99, "€50": 99, "€100": 99, "€250": 99 },
+                category: "Special",
+                images: ["https://d5968b-0f.myshopify.com/cdn/shop/files/LM1.jpg?v=1709109014&width=600"],
+                variants: ["€25", "€50", "€100", "€250"],
+                variantLabel: "Valore",
+                description: "Il regalo ideale per chi apprezza l'artigianato e l'esclusività.",
+                stripeUrl: "INCOLLA_QUI_IL_LINK_STRIPE_DA_DASHBOARD"
+            }
+        ];
+
+        // Inizializza con i prodotti locali per uso offline
+        localProducts = defaultProducts; 
+
+        // ---------------------------------------------------------
+        // FUNZIONE ADMIN (DA USARE UNA VOLTA SOLA PER POPOLARE IL DB)
+        // ---------------------------------------------------------
+        async function adminPopulateDB() {
+            if(!window.fb) { alert("Attenzione: Firebase non è connesso. Configuralo prima di usare questa funzione."); return; }
+            const { db, appId, setDoc, doc } = window.fb;
+            
+            // Password semplice per evitare click accidentali
+            const password = prompt("Inserisci password Admin per inizializzare il DB:");
+            if(password !== "admin123") { alert("Password errata."); return; }
+
+            if(!confirm("Sei sicuro? Questo caricherà tutti i prodotti di default nel database online.")) return;
+
+            let count = 0;
+            try {
+                for(const p of defaultProducts) {
+                    // Carica ogni prodotto usando il suo ID
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', p.id), p);
+                    count++;
+                }
+                alert(`Successo! ${count} prodotti caricati nel database.`);
+                // Forza il ricaricamento per vedere i dati dal DB
+                location.reload();
+            } catch (e) {
+                alert("Errore durante il caricamento: " + e.message);
+                console.error(e);
+            }
+        }
+
+        // ---------------------------------------------------------
+        // LOGICA DI SINCRONIZZAZIONE (FIREBASE)
+        // ---------------------------------------------------------
+        function initDataSync() {
+            if(!window.fb) return; 
+            
+            const { db, auth, appId, onSnapshot, collection } = window.fb;
+            auth.onAuthStateChanged((user) => {
+                if (!user) return;
+                const productsCol = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+                onSnapshot(productsCol, (snapshot) => {
+                    const dbProducts = [];
+                    snapshot.forEach(doc => dbProducts.push({ id: doc.id, ...doc.data() }));
+                    // Se il DB ha dati, usiamo quelli. Altrimenti restiamo sui default.
+                    if(dbProducts.length > 0) {
+                        localProducts = dbProducts;
+                        renderProducts();
+                        if (currentProductId) updateDetailViewState();
+                    }
+                }, (error) => console.error("Trendiu DB Error:", error));
+            });
+        }
+
+        async function handleStockDecrement(productId, variant) {
+            if(!window.fb) return true; // Offline mode
+            
+            const { db, appId, doc, updateDoc, increment, getDoc } = window.fb;
+            const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', productId);
+            try {
+                const snap = await getDoc(productRef);
+                if (snap.exists()) {
+                    const currentStock = snap.data().variantsStock ? snap.data().variantsStock[variant] : 0;
+                    if(currentStock > 0) {
+                        const updateField = `variantsStock.${variant}`;
+                        await updateDoc(productRef, { [updateField]: increment(-1) });
+                        return true;
+                    }
+                }
+                return false;
+            } catch (e) {
+                console.error("Trendiu Stock Error:", e);
+                return false;
+            }
+        }
+
+        // ---------------------------------------------------------
+        // INTEGRAZIONE AI (GOOGLE GEMINI)
+        // ---------------------------------------------------------
+        async function callGemini(prompt, sys) {
+            if(!apiKey) return "Funzionalità AI non configurata (Manca API Key).";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const res = await fetch(url, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sys }] } }) });
+            const data = await res.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        async function getStylistAdvice() {
+            const input = document.getElementById('stylist-input').value;
+            const resDiv = document.getElementById('stylist-result');
+            const btn = document.getElementById('stylist-btn');
+            if(!input.trim()) return;
+            btn.disabled = true;
+            resDiv.classList.remove('hidden', 'border-red-500'); 
+            resDiv.innerText = "Trendiu AI sta consultando l'archivio...";
+            const sys = "Sei lo Stylist di Boutique LM. Consiglia prodotti dal catalogo basandoti sui gusti dell'utente. Se la richiesta è volgare o inappropriata, rifiuta con estrema eleganza fiorentina. Sii raffinato e breve.";
+            try { resDiv.innerText = await callGemini(input, sys); } 
+            catch(e) { resDiv.innerText = "L'AI è momentaneamente offline."; resDiv.classList.add('border-red-500'); } 
+            finally { btn.disabled = false; }
+        }
+
+        async function generateProductStory() {
+            const prod = localProducts.find(p => p.id === currentProductId);
+            const div = document.getElementById('detail-story');
+            const btn = document.getElementById('story-btn');
+            btn.disabled = true;
+            div.innerText = "Trendiu AI sta evocando la leggenda...";
+            const sys = `Crea una micro-leggenda di 40 parole sulla vita precedente del materiale di: ${prod.name}. Usa un tono poetico e lussuoso.`;
+            try { div.innerText = `"${await callGemini("Racconta la storia.", sys)}"`; } 
+            catch(e) { div.innerText = "La storia è protetta dal segreto professionale."; } 
+            finally { btn.disabled = false; }
+        }
+
+        async function getEcoImpact() {
+            const prod = localProducts.find(p => p.id === currentProductId);
+            const div = document.getElementById('eco-result');
+            const btn = document.getElementById('eco-btn');
+            btn.disabled = true;
+            div.innerText = "Calcolo risparmio ambientale in corso...";
+            const sys = `Sei un esperto di sostenibilità per Boutique LM. Stima l'impatto ambientale risparmiato (Litri d'acqua e Kg di CO2) scegliendo l'upcycling per questo prodotto: ${prod.name}. 
+            Sii breve e scientifico (max 30 parole). Esempio: "Risparmio stimato: 2000L acqua e 5kg CO2 rispetto al nuovo."`;
+            try { div.innerText = await callGemini("Calcola impatto.", sys); } 
+            catch(e) { div.innerText = "Dati non disponibili al momento."; } 
+            finally { btn.disabled = false; }
+        }
+
+        // ---------------------------------------------------------
+        // UI & INTERACTION
+        // ---------------------------------------------------------
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = localProducts.map(p => {
+                let totalStock = 0;
+                if(p.variantsStock) {
+                    totalStock = Object.values(p.variantsStock).reduce((a, b) => a + b, 0);
+                }
+                const isSoldOut = totalStock <= 0 && !p.isService;
+                
+                let priceDisplay = `€${p.price.toFixed(2)}`;
+                if (p.price < 0) priceDisplay = "Su Preventivo";
+
+                return `
+                    <div class="product-card group cursor-pointer ${isSoldOut ? 'out-of-stock' : ''}" onclick="showProduct('${p.id}')">
+                        <div class="relative aspect-square overflow-hidden bg-zinc-100 rounded-sm">
+                            <img src="${p.images[0]}" class="w-full h-full object-cover">
+                            ${isSoldOut ? 
+                                '<div class="absolute inset-0 flex items-center justify-center"><span class="sold-out-badge">Esaurito</span></div>' : 
+                                '<div class="absolute bottom-4 right-4 bg-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition duration-500 shadow-xl"><i data-lucide="plus" class="w-4 h-4 text-black"></i></div>'
+                            }
+                        </div>
+                        <div class="mt-6 text-center">
+                            <p class="text-[8px] font-bold tracking-[0.4em] uppercase text-zinc-400 mb-2 italic">${p.category}</p>
+                            <h3 class="serif font-bold text-lg mb-1 tracking-tight">${p.name}</h3>
+                            <p class="font-medium text-zinc-500 text-sm italic">${priceDisplay}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function showProduct(id) {
+            const p = localProducts.find(prod => prod.id === id);
+            currentProductId = id;
+            selectedVariant = p.variants && p.variants.length > 0 ? p.variants[0] : "";
+            
+            document.getElementById('detail-title').innerText = p.name;
+            document.getElementById('detail-description').innerText = p.description;
+            
+            const priceEl = document.getElementById('detail-price');
+            const btn = document.getElementById('add-to-cart-btn');
+            
+            if (p.price < 0) {
+                priceEl.innerText = "Su Preventivo";
+                btn.innerText = "Richiedi Valutazione";
+                btn.onclick = () => window.location.href = "mailto:info@boutiquelm.it?subject=Richiesta Preventivo Restauro";
+            } else {
+                priceEl.innerText = `€${p.price.toFixed(2)}`;
+                btn.innerText = "Aggiungi al carrello";
+                btn.onclick = () => addToCartCurrent();
+            }
+
+            document.getElementById('detail-breadcrumb-name').innerText = p.name;
+            document.getElementById('detail-image-main').src = p.images[0];
+            
+            const thumbs = document.getElementById('detail-thumbnails');
+            thumbs.innerHTML = p.images.map((img, i) => `<img src="${img}" class="thumbnail aspect-square cursor-pointer border-2 border-transparent ${i===0?'active':''}" onclick="onThumbnailClick(this, '${img}', ${i})">`).join('');
+            
+            const varContainer = document.getElementById('detail-variants');
+            if(p.variants && p.variants.length > 0) {
+                varContainer.innerHTML = `<label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block font-bold">${p.variantLabel}</label>
+                    <div class="grid grid-cols-2 gap-2 font-bold uppercase text-[9px] tracking-widest italic">
+                        ${p.variants.map((v, i) => {
+                            const vStock = p.variantsStock ? p.variantsStock[v] : 0;
+                            const isVSoldOut = vStock <= 0;
+                            return `
+                            <button onclick="onVariantClick(this, '${v}', ${i})" class="variant-btn border py-3 transition hover:border-black ${i===0 ? 'bg-black text-white border-black' : ''} ${isVSoldOut ? 'sold-out' : ''}">
+                                ${v} ${isVSoldOut ? '(Esaurito)' : ''}
+                            </button>
+                        `}).join('')}
+                    </div>`;
+            } else varContainer.innerHTML = '';
+
+            const aiContainer = document.getElementById('ai-features-container');
+            if (p.price < 0) {
+                aiContainer.classList.add('hidden'); 
+            } else {
+                aiContainer.classList.remove('hidden');
+                document.getElementById('detail-story').innerText = "Scopri la possibile vita precedente di questo materiale iconico...";
+                document.getElementById('eco-result').innerText = "Scopri quanta acqua e CO2 hai risparmiato scegliendo l'upcycling...";
+            }
+
+            updateDetailViewState();
+            showView('product');
+            lucide.createIcons();
+        }
+
+        // --- TRENDIU SYNC LOGIC ---
+
+        function onVariantClick(el, val, index) {
+            selectedVariant = val;
+            
+            document.querySelectorAll('.variant-btn').forEach(b => {
+                b.classList.remove('bg-black', 'text-white', 'border-black');
+            });
+            el.classList.add('bg-black', 'text-white', 'border-black');
+
+            const p = localProducts.find(prod => prod.id === currentProductId);
+            if (p && p.variantImageMap && p.variantImageMap[index] !== undefined) {
+                const imgIndex = p.variantImageMap[index];
+                if (p.images[imgIndex]) {
+                    document.getElementById('detail-image-main').src = p.images[imgIndex];
+                    document.querySelectorAll('.thumbnail').forEach((t, i) => {
+                        t.classList.toggle('active', i === imgIndex);
+                    });
+                }
+            }
+            updateDetailViewState();
+        }
+
+        function onThumbnailClick(el, src, imgIndex) {
+            document.getElementById('detail-image-main').src = src;
+            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            const p = localProducts.find(prod => prod.id === currentProductId);
+            if (p && p.variantImageMap) {
+                const variantIndex = p.variantImageMap.indexOf(imgIndex);
+                if (variantIndex !== -1 && p.variants[variantIndex]) {
+                    selectedVariant = p.variants[variantIndex];
+                    document.querySelectorAll('.variant-btn').forEach((b, i) => {
+                        if (i === variantIndex) b.classList.add('bg-black', 'text-white', 'border-black');
+                        else b.classList.remove('bg-black', 'text-white', 'border-black');
+                    });
+                    updateDetailViewState();
+                }
+            }
+        }
+
+        function updateDetailViewState() {
+            const p = localProducts.find(prod => prod.id === currentProductId);
+            const btn = document.getElementById('add-to-cart-btn');
+            const overlay = document.getElementById('detail-soldout-overlay');
+            
+            if (p.price < 0) { 
+                overlay.classList.add('hidden'); btn.disabled = false; return;
+            }
+
+            const vStock = p.variantsStock ? p.variantsStock[selectedVariant] : 0;
+
+            if (vStock <= 0) {
+                btn.disabled = true; btn.innerText = "Variante Esaurita";
+                overlay.classList.add('hidden'); 
+            } else {
+                btn.disabled = false; btn.innerText = "Aggiungi al carrello";
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function addToCartCurrent() {
+            const p = localProducts.find(prod => prod.id === currentProductId);
+            if(p) addToCart(p.name, p.price, selectedVariant);
+        }
+
+        function addToCart(n, p, v) { 
+            const prod = localProducts.find(it => it.name === n);
+            const vStock = prod.variantsStock ? prod.variantsStock[v] : 0;
+            
+            if(prod.price > 0 && vStock <= 0) { alert("Spiacenti, questa variante è esaurita."); return; }
+            cart.push({id: prod.id, n, p, v}); updateCart(); toggleCart(true); 
+        }
+
+        function updateCart() {
+            const count = document.getElementById('cart-count');
+            const items = document.getElementById('cart-items');
+            const total = document.getElementById('cart-total');
+            count.innerText = cart.length;
+            if(cart.length === 0) { items.innerHTML = '<p class="text-zinc-400 italic text-center py-20 font-light">Il carrello è vuoto.</p>'; total.innerText = '€0,00'; return; }
+            let sum = 0;
+            items.innerHTML = cart.map((it, i) => { 
+                let priceDisplay = `€${it.p.toFixed(2)}`;
+                if(it.p < 0) priceDisplay = "Richiesta Preventivo";
+                if(it.p > 0) sum += it.p;
+                return `<div class="flex justify-between border-b border-zinc-50 pb-4"><div class="text-[10px] font-bold uppercase leading-relaxed">${it.n}<br><span class="text-zinc-400 italic">${it.v||''}</span><br>${priceDisplay}</div><button onclick="cart.splice(${i},1);updateCart()" class="text-zinc-300 hover:text-black transition">X</button></div>`; 
+            }).join('');
+            total.innerText = `€${sum.toFixed(2)}`;
+        }
+
+        async function checkout() {
+            if(cart.length === 0) return;
+            const btn = document.getElementById('checkout-btn');
+            
+            const hasService = cart.some(item => item.p < 0);
+            if(hasService) {
+                window.location.href = "mailto:info@boutiquelm.it?subject=Richiesta Ordine Misto & Preventivo&body=Salve, vorrei procedere con il mio ordine...";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Verifica Stock...";
+            const item = cart[0];
+            const p = localProducts.find(pr => pr.id === item.id);
+            if(p && p.stripeUrl && p.stripeUrl.includes('buy.stripe.com')) {
+                const vStock = p.variantsStock ? p.variantsStock[item.v] : 0;
+                
+                if(vStock > 0) {
+                    const success = await handleStockDecrement(p.id, item.v);
+                    if(success) {
+                        btn.innerText = "Reindirizzamento Stripe...";
+                        window.location.href = p.stripeUrl; 
+                    } else {
+                        alert("Spiacenti, la variante selezionata è terminata durante la transazione.");
+                        btn.disabled = false; btn.innerText = "Procedi al pagamento";
+                    }
+                } else {
+                    alert("Variante esaurita.");
+                    btn.disabled = false; btn.innerText = "Procedi al pagamento";
+                }
+            } else {
+                alert("ATTENZIONE: Link di pagamento mancante o prodotto esaurito.");
+                btn.disabled = false; btn.innerText = "Procedi al pagamento";
+            }
+        }
+
+        function toggleMenu() { document.getElementById('mobile-menu').classList.toggle('translate-x-full'); }
+        function toggleCart(s) { document.getElementById('cart-sidebar').classList.toggle('translate-x-full', !s); }
+        function showView(v) { document.querySelectorAll('.view-section').forEach(s => s.classList.toggle('active', s.id === `view-${v}`)); window.scrollTo(0,0); }
+        function openStylist() { document.getElementById('stylist-modal').classList.remove('hidden'); }
+        function closeStylist() { document.getElementById('stylist-modal').classList.add('hidden'); }
+
+        window.onload = () => {
+            renderProducts();
+            lucide.createIcons();
+            const checkFB = setInterval(() => {
+                if(window.fb) { clearInterval(checkFB); initDataSync(); }
+            }, 100);
+        };
+    </script>
+</body>
+</html>
