@@ -13,9 +13,13 @@ service cloud.firestore {
       allow write: if isAuth();
     }
 
-    // Config/Settings (Authenticated read and write)
+    // Config/Settings: contiene SOLO la chiave Gemini dell'AI Stylist.
+    // La lettura è pubblica perché l'AI Stylist gira nel browser dei visitatori: la chiave va
+    // quindi LIMITATA nella Google Cloud Console (referrer HTTP = dominio del sito, solo API
+    // Generative Language, quota giornaliera). Scrittura solo per l'admin.
     match /artifacts/{appId}/config/settings {
-      allow read, write: if isAuth();
+      allow read: if true;
+      allow write: if isAuth();
     }
     
     // Default deny all other collections

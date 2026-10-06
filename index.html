@@ -14,8 +14,28 @@
         content="Borse e accessori di lusso autentici selezionati. Scopri la collezione Boutique LM — reselling certificato e servizi di restauro su richiesta.">
     <meta property="og:image"
         content="https://d5968b-0f.myshopify.com/cdn/shop/files/1FA82E27-73FC-41B3-AF73-672E17B731F4.jpg?v=1764622013&width=1200">
-    <meta property="og:url" content="https://boutiquelm.it">
+    <meta property="og:url" content="https://boutiquelm.web.app/">
     <meta property="og:type" content="website">
+
+    <link rel="canonical" href="https://boutiquelm.web.app/">
+    <link rel="alternate" hreflang="it" href="https://boutiquelm.web.app/?lang=it">
+    <link rel="alternate" hreflang="en" href="https://boutiquelm.web.app/?lang=en">
+    <link rel="alternate" hreflang="x-default" href="https://boutiquelm.web.app/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Store",
+        "name": "Boutique LM",
+        "description": "Luxury reselling e servizi di atelier a Firenze: borse e accessori di lusso autentici, restauro e upcycling.",
+        "url": "https://boutiquelm.web.app/",
+        "logo": "https://boutiquelm.web.app/logo.png",
+        "email": "info@boutiquelm.it",
+        "telephone": "+393931218244",
+        "address": { "@type": "PostalAddress", "addressLocality": "Firenze", "addressCountry": "IT" },
+        "sameAs": ["https://www.instagram.com/boutique_lm___", "https://www.tiktok.com/@boutique__lm"]
+    }
+    </script>
 
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👜</text></svg>">
@@ -46,7 +66,9 @@
             const auth = getAuth(app);
             const db = getFirestore(app);
             const storage = getStorage(app);
-            const analytics = getAnalytics(app); // Attiva Analytics
+            // Google Analytics parte SOLO dopo il consenso ai cookie analitici (banner in fondo alla pagina)
+            window.startAnalytics = () => { if (!window._lmAnalytics) window._lmAnalytics = getAnalytics(app); };
+            try { if (localStorage.getItem('lm_consent') === 'granted') window.startAnalytics(); } catch (e) {}
             const appId = 'boutique-lm-app';
 
             // Espone tutto a window per l'admin panel
@@ -266,6 +288,19 @@
                     E-mail
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODALE PAGAMENTO ARTICOLI MULTIPLI -->
+    <div id="multi-pay-modal"
+        class="fixed inset-0 z-[100] bg-black/60 hidden backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-6 border border-zinc-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="serif text-xl font-bold tracking-tight text-zinc-900">Paga i tuoi articoli</h3>
+                <button onclick="closeMultiPay()" class="p-2 hover:bg-zinc-100 rounded-full transition" aria-label="Chiudi"><i data-lucide="x"></i></button>
+            </div>
+            <p class="text-xs text-zinc-500 leading-relaxed mb-6">Ogni articolo si paga separatamente con Stripe. Dopo ogni pagamento torna qui per pagare il successivo: il carrello viene conservato.</p>
+            <div id="multi-pay-list" class="space-y-4 max-h-[50vh] overflow-y-auto"></div>
         </div>
     </div>
 
@@ -543,13 +578,26 @@
                 class="text-[9px] uppercase tracking-widest hover:text-black transition">Privacy Policy</a>
             <a href="legal/cookies.html" target="_blank"
                 class="text-[9px] uppercase tracking-widest hover:text-black transition">Cookie Policy</a>
+            <button onclick="openCookieBanner()"
+                class="text-[9px] uppercase tracking-widest hover:text-black transition">Preferenze cookie</button>
         </div>
 
         <!-- Area Riservata (Link Nascosto) -->
         <a href="#admin" class="opacity-0 hover:opacity-20 text-[6px] transition uppercase tracking-widest">Admin</a>
 
-        <p class="uppercase tracking-[0.5em] text-[9px] text-zinc-400 font-bold mt-4">Luxury Reselling & Atelier Services • Firenze • 2025</p>
+        <p class="uppercase tracking-[0.5em] text-[9px] text-zinc-400 font-bold mt-4">Luxury Reselling & Atelier Services • Firenze • 2026</p>
     </footer>
+
+    <!-- BANNER COOKIE (consenso per gli analitici) -->
+    <div id="cookie-banner" class="hidden fixed bottom-0 inset-x-0 z-[150] bg-zinc-900 text-white px-4 py-4 shadow-2xl" role="dialog" aria-live="polite">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row md:items-center gap-4">
+            <p class="text-xs leading-relaxed text-zinc-300 flex-1">Usiamo cookie tecnici necessari al funzionamento del sito e, solo con il tuo consenso, cookie analitici (Google Analytics) per migliorarlo. <a href="legal/cookies.html" target="_blank" class="underline text-white">Cookie Policy</a></p>
+            <div class="flex gap-3 shrink-0">
+                <button onclick="setCookieConsent(false)" class="px-5 py-3 border border-zinc-600 text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-zinc-800 transition">Rifiuta</button>
+                <button onclick="setCookieConsent(true)" class="px-5 py-3 bg-white text-black text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-zinc-200 transition">Accetta</button>
+            </div>
+        </div>
+    </div>
 
     <!-- WHATSAPP -->
     <a href="https://wa.me/393931218244" target="_blank"
@@ -583,6 +631,15 @@
             "Procedi al pagamento": "Proceed to checkout",
             "Sincronizzazione Stock Attiva": "Live stock sync active",
             "Verifica Stock...": "Checking stock...",
+            "Paga i tuoi articoli": "Pay for your items",
+            "Ogni articolo si paga separatamente con Stripe. Dopo ogni pagamento torna qui per pagare il successivo: il carrello viene conservato.": "Each item is paid separately via Stripe. After each payment, come back here to pay for the next one: your cart is saved.",
+            "Paga": "Pay",
+            "Chiudi": "Close",
+            "Esaurito: rimosso dal carrello.": "Sold out: removed from your cart.",
+            "Pagamento online non ancora disponibile per questo articolo: ti mettiamo in contatto con l'Atelier per completare l'ordine.": "Online payment is not yet available for this item: we'll connect you with the Atelier to complete your order.",
+            "Richiesta Ordine": "Order Request",
+            "Salve Atelier Boutique LM, vorrei acquistare:": "Hello Boutique LM Atelier, I would like to purchase:",
+            "Attendo istruzioni per il pagamento e la spedizione.": "I look forward to the payment and shipping instructions.",
             "Reindirizzamento Stripe...": "Redirecting to Stripe...",
             // Home
             "Firenze • Luxury Reselling": "Florence • Luxury Reselling",
@@ -685,7 +742,11 @@
             "Grazie per aver scelto Boutique LM. Riceverai una conferma a breve.": "Thank you for choosing Boutique LM. You will receive a confirmation shortly.",
             // Footer
             "Termini & Condizioni": "Terms & Conditions",
-            "Luxury Reselling & Atelier Services • Firenze • 2025": "Luxury Reselling & Atelier Services • Florence • 2025",
+            "Preferenze cookie": "Cookie preferences",
+            "Usiamo cookie tecnici necessari al funzionamento del sito e, solo con il tuo consenso, cookie analitici (Google Analytics) per migliorarlo.": "We use technical cookies needed for the site to work and, only with your consent, analytics cookies (Google Analytics) to improve it.",
+            "Rifiuta": "Decline",
+            "Accetta": "Accept",
+            "Luxury Reselling & Atelier Services • Firenze • 2026": "Luxury Reselling & Atelier Services • Florence • 2026",
             // Categorie e valori ricorrenti dei prodotti (i testi liberi non presenti restano in italiano)
             "Borse & Pouch": "Bags & Pouches",
             "Piccola Pelletteria": "Small Leather Goods",
@@ -841,6 +902,25 @@
         let selectedVariant = "";
         let localProducts = [];
         let cart = [];
+        try {
+            const saved = JSON.parse(localStorage.getItem('lm_cart') || '[]');
+            if (Array.isArray(saved)) cart = saved.filter(it => it && it.id && it.n && typeof it.p === 'number');
+        } catch (e) {}
+
+        // Link Stripe dei prodotti pubblicati tramite tools/create-stripe-links.py: { idProdotto: "https://buy.stripe.com/..." }
+        let STRIPE_LINKS = {};
+        fetch('stripe-links.json').then(r => r.ok ? r.json() : {}).then(j => { STRIPE_LINKS = j || {}; }).catch(() => {});
+        // Il link Stripe impostato dall'admin ha la precedenza su quello generato in automatico
+        function stripeUrlFor(p) {
+            const u = (p && p.stripeUrl && p.stripeUrl.includes('buy.stripe.com')) ? p.stripeUrl : (p && STRIPE_LINKS[p.id]);
+            return u && String(u).includes('buy.stripe.com') ? u : '';
+        }
+        // Pezzi disponibili: per variante se il prodotto ha varianti, altrimenti il campo "stock" semplice
+        function stockFor(p, v) {
+            if (!p) return 0;
+            if (p.variants && p.variants.length > 0) return (p.variantsStock && p.variantsStock[v]) || 0;
+            return (p.stock !== undefined) ? p.stock : 0;
+        }
 
         // ---------------------------------------------------------------------------------------
         // ⚠️ GESTIONE PRODOTTI
@@ -933,37 +1013,32 @@
             });
         }
 
-        async function handleStockDecrement(productId, variant) {
-            if (!window.fb) return true; // Offline mode
-
-            const { db, appId, doc, updateDoc, increment, getDoc } = window.fb;
-            const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', productId);
-            try {
-                const snap = await getDoc(productRef);
-                if (snap.exists()) {
-                    const currentStock = snap.data().variantsStock ? snap.data().variantsStock[variant] : 0;
-                    if (currentStock > 0) {
-                        const updateField = `variantsStock.${variant}`;
-                        await updateDoc(productRef, { [updateField]: increment(-1) });
-                        return true;
-                    }
-                }
-                return false;
-            } catch (e) {
-                console.error("Trendiu Stock Error:", e);
-                return false;
-            }
-        }
+        // Lo stock NON si scala dal browser: le regole Firestore permettono la scrittura solo all'admin.
+        // Il pezzo venduto si azzera da /#admin; i link Stripe creati da tools/create-stripe-links.py
+        // si disattivano da soli dopo la prima vendita, quindi non si può vendere due volte lo stesso pezzo unico.
 
         // ---------------------------------------------------------
         // INTEGRAZIONE AI (GOOGLE GEMINI)
         // ---------------------------------------------------------
+        // Modelli provati in ordine: i "preview" di Google vengono ritirati dopo pochi mesi (il vecchio
+        // gemini-2.5-flash-preview-09-2025 è stato spento), quindi si parte dall'alias sempre aggiornato.
+        const GEMINI_MODELS = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
         async function callGemini(prompt, sys) {
-            if (!apiKey) return "Funzionalità AI non configurata (Manca API Key).";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const res = await fetch(url, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sys }] } }) });
-            const data = await res.json();
-            return data.candidates[0].content.parts[0].text;
+            if (!apiKey) throw new Error("Chiave AI mancante");
+            let lastErr = null;
+            for (const model of GEMINI_MODELS) {
+                try {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sys }] } }) });
+                    const data = await res.json();
+                    if (!res.ok) { lastErr = new Error((data.error && data.error.message) || ('HTTP ' + res.status)); if (res.status === 404 || res.status === 400) continue; throw lastErr; }
+                    const text = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0].text;
+                    if (!text) throw new Error("Risposta AI vuota");
+                    return text;
+                } catch (e) { lastErr = e; if (!/404|400|not found|no longer available/i.test(String(e.message))) break; }
+            }
+            console.error("Gemini non disponibile:", lastErr);
+            throw lastErr || new Error("Gemini non disponibile");
         }
 
         // Helper to get catalog summary for AI
@@ -1178,7 +1253,7 @@
             }
 
             return `
-                <div class="product-card group cursor-pointer ${isSoldOut ? 'out-of-stock' : ''}" onclick="showProduct('${p.id}')">
+                <a href="p/${slugifyProduct(p)}.html" class="product-card group cursor-pointer block ${isSoldOut ? 'out-of-stock' : ''}" onclick="event.preventDefault(); showProduct('${p.id}')">
                     <div class="relative aspect-square overflow-hidden bg-zinc-100 rounded-sm">
                         <img src="${displayImage}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" loading="lazy">
                         ${isSoldOut ?
@@ -1191,8 +1266,14 @@
                         <h3 class="serif font-bold text-lg mb-1 tracking-tight">${pf(p, 'name')}</h3>
                         <p class="font-medium text-zinc-500 text-sm italic">${priceDisplay}</p>
                     </div>
-                </div>
+                </a>
             `;
+        }
+
+        // Stesso slug di tools/build-seo.py (pagine statiche /p/<slug>.html usate da Google)
+        function slugifyProduct(p) {
+            let sl = (p.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/g, '');
+            return (sl ? sl + '-' : '') + String(p.id).slice(0, 6).toLowerCase();
         }
 
         function showProduct(id) {
@@ -1403,10 +1484,11 @@
                 overlay.classList.add('hidden'); btn.disabled = false; return;
             }
 
-            const vStock = p.variantsStock ? p.variantsStock[selectedVariant] : 0;
+            const vStock = stockFor(p, selectedVariant);
+            const hasVariants = p.variants && p.variants.length > 0;
 
             if (vStock <= 0) {
-                btn.disabled = true; btn.innerText = t("Variante Esaurita");
+                btn.disabled = true; btn.innerText = t(hasVariants ? "Variante Esaurita" : "Esaurito");
                 overlay.classList.add('hidden');
             } else {
                 btn.disabled = false; btn.innerText = t("Aggiungi al carrello");
@@ -1421,7 +1503,7 @@
 
         function addToCart(n, p, v) {
             const prod = localProducts.find(it => it.name === n);
-            const vStock = prod.variantsStock ? prod.variantsStock[v] : 0;
+            const vStock = stockFor(prod, v);
 
             if (prod.price > 0 && vStock <= 0) { alert(t("Spiacenti, questa variante è esaurita.")); return; }
             cart.push({ id: prod.id, n, p, v }); updateCart(); toggleCart(true);
@@ -1432,6 +1514,7 @@
             const items = document.getElementById('cart-items');
             const total = document.getElementById('cart-total');
             count.innerText = cart.length;
+            try { localStorage.setItem('lm_cart', JSON.stringify(cart)); } catch (e) {}
             if (cart.length === 0) { items.innerHTML = `<p class="text-zinc-400 italic text-center py-20 font-light">${t('Il carrello è vuoto.')}</p>`; total.innerText = '€0,00'; return; }
             let sum = 0;
             items.innerHTML = cart.map((it, i) => {
@@ -1443,44 +1526,76 @@
             total.innerText = `€${sum.toFixed(2)}`;
         }
 
-        async function checkout() {
+        // Un Payment Link Stripe vale per un solo prodotto: con più articoli si paga un articolo alla volta.
+        function checkout() {
             if (cart.length === 0) return;
-            const btn = document.getElementById('checkout-btn');
 
-            const hasService = cart.some(item => item.p < 0);
-            if (hasService) {
+            // Toglie dal carrello i pezzi nel frattempo esauriti
+            const sold = cart.filter(it => { const pr = localProducts.find(x => x.id === it.id); return pr && pr.price > 0 && stockFor(pr, it.v) <= 0; });
+            if (sold.length) {
+                cart = cart.filter(it => !sold.includes(it));
+                updateCart();
+                alert(sold.map(it => it.n).join(', ') + ' — ' + t('Esaurito: rimosso dal carrello.'));
+                if (cart.length === 0) return;
+            }
+
+            // Servizi su preventivo o articoli senza link di pagamento: si conclude via WhatsApp / e-mail
+            const needsContact = cart.some(it => {
+                const pr = localProducts.find(x => x.id === it.id);
+                return it.p < 0 || !pr || !stripeUrlFor(pr);
+            });
+            if (needsContact) {
                 const itemsStr = cart.map(item => `- ${item.n} (${item.v || 'Standard'}) - ${item.p < 0 ? t('Su Preventivo') : '€' + item.p.toFixed(2)}`).join('\n');
+                const hasService = cart.some(item => item.p < 0);
                 window.openContactChoice(
-                    t("Richiesta Ordine Misto & Preventivo"),
-                    `${t('Salve Atelier Boutique LM, vorrei procedere con il seguente ordine:')}\n\n${itemsStr}\n\n${t('Attendo dettagli per il pagamento e preventivo.')}`
+                    t(hasService ? "Richiesta Ordine Misto & Preventivo" : "Richiesta Ordine"),
+                    hasService
+                        ? `${t('Salve Atelier Boutique LM, vorrei procedere con il seguente ordine:')}\n\n${itemsStr}\n\n${t('Attendo dettagli per il pagamento e preventivo.')}`
+                        : `${t('Salve Atelier Boutique LM, vorrei acquistare:')}\n\n${itemsStr}\n\n${t('Attendo istruzioni per il pagamento e la spedizione.')}`
                 );
                 return;
             }
 
-            btn.disabled = true;
-            btn.innerText = t("Verifica Stock...");
-            const item = cart[0];
-            const p = localProducts.find(pr => pr.id === item.id);
-            if (p && p.stripeUrl && p.stripeUrl.includes('buy.stripe.com')) {
-                const vStock = p.variantsStock ? p.variantsStock[item.v] : 0;
+            if (cart.length === 1) { payCartItem(0); return; }
+            openMultiPay();
+        }
 
-                if (vStock > 0) {
-                    const success = await handleStockDecrement(p.id, item.v);
-                    if (success) {
-                        btn.innerText = t("Reindirizzamento Stripe...");
-                        window.location.href = p.stripeUrl;
-                    } else {
-                        alert(t("Spiacenti, la variante selezionata è terminata durante la transazione."));
-                        btn.disabled = false; btn.innerText = t("Procedi al pagamento");
-                    }
-                } else {
-                    alert(t("Variante esaurita."));
-                    btn.disabled = false; btn.innerText = t("Procedi al pagamento");
-                }
-            } else {
-                alert(t("ATTENZIONE: Link di pagamento mancante o prodotto esaurito."));
-                btn.disabled = false; btn.innerText = t("Procedi al pagamento");
-            }
+        function payCartItem(i) {
+            const item = cart[i];
+            const pr = item && localProducts.find(x => x.id === item.id);
+            const url = stripeUrlFor(pr);
+            if (!url) { alert(t("ATTENZIONE: Link di pagamento mancante o prodotto esaurito.")); return; }
+            if (stockFor(pr, item.v) <= 0) { alert(t("Variante esaurita.")); return; }
+            // Ricorda cosa si sta pagando: al ritorno da Stripe (?ordine=ok) l'articolo esce dal carrello
+            try { sessionStorage.setItem('lm_paying', JSON.stringify({ id: item.id, v: item.v || '' })); } catch (e) {}
+            const btn = document.getElementById('checkout-btn');
+            if (btn) { btn.disabled = true; btn.innerText = t("Reindirizzamento Stripe..."); }
+            window.location.href = url;
+        }
+
+        function openMultiPay() {
+            const list = document.getElementById('multi-pay-list');
+            list.innerHTML = cart.map((it, i) => {
+                const pr = localProducts.find(x => x.id === it.id);
+                const name = pr ? pf(pr, 'name') : it.n;
+                return `<div class="flex items-center justify-between gap-4 border-b border-zinc-100 pb-4">
+                    <div class="text-[11px] font-bold uppercase leading-relaxed min-w-0">${name}<br><span class="text-zinc-400 italic">${it.v || ''}</span> <span class="text-zinc-500">€${it.p.toFixed(2)}</span></div>
+                    <button onclick="payCartItem(${i})" class="shrink-0 bg-black text-white px-5 py-3 font-bold uppercase text-[10px] tracking-widest rounded-lg hover:bg-zinc-800 transition">${t('Paga')}</button>
+                </div>`;
+            }).join('');
+            document.getElementById('multi-pay-modal').classList.remove('hidden');
+        }
+        function closeMultiPay() { document.getElementById('multi-pay-modal').classList.add('hidden'); }
+
+        // Ritorno da Stripe: l'articolo appena pagato esce dal carrello
+        function removePaidFromCart() {
+            try {
+                const paid = JSON.parse(sessionStorage.getItem('lm_paying') || 'null');
+                sessionStorage.removeItem('lm_paying');
+                if (!paid) return;
+                const idx = cart.findIndex(it => it.id === paid.id && (it.v || '') === paid.v);
+                if (idx !== -1) cart.splice(idx, 1);
+            } catch (e) {}
         }
 
         function toggleMenu() { document.getElementById('mobile-menu').classList.toggle('translate-x-full'); }
@@ -1493,13 +1608,28 @@
         function openStylist() { document.getElementById('stylist-modal').classList.remove('hidden'); }
         function closeStylist() { document.getElementById('stylist-modal').classList.add('hidden'); }
 
+        // -------------------------------------------------------
+        // CONSENSO COOKIE
+        // -------------------------------------------------------
+        function openCookieBanner() { document.getElementById('cookie-banner').classList.remove('hidden'); }
+        function setCookieConsent(granted) {
+            try { localStorage.setItem('lm_consent', granted ? 'granted' : 'denied'); } catch (e) {}
+            document.getElementById('cookie-banner').classList.add('hidden');
+            if (granted && window.startAnalytics) window.startAnalytics();
+        }
+
         window.onload = () => {
+            let consent = null;
+            try { consent = localStorage.getItem('lm_consent'); } catch (e) {}
+            if (!consent) openCookieBanner();
+
             renderSkeletons();
             lucide.createIcons();
 
             // Controlla ?ordine=ok (redirect da Stripe)
             const params = new URLSearchParams(window.location.search);
-            if (params.get('ordine') === 'ok') showThankYouBanner();
+            if (params.get('ordine') === 'ok') { removePaidFromCart(); showThankYouBanner(); }
+            updateCart();
 
             const checkFB = setInterval(() => {
                 if (window.fb) { clearInterval(checkFB); initDataSync(); }

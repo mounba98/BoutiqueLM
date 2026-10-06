@@ -1,79 +1,64 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-title-it="Termini e Condizioni di Vendita - Boutique LM" data-title-en="Terms and Conditions of Sale - Boutique LM">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termini e Condizioni - Boutique LM</title>
+    <title>Termini e Condizioni di Vendita - Boutique LM</title>
+    <meta name="robots" content="index, follow">
     <script src="https://cdn.tailwindcss.com"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap"
         rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        h1,
-        h2,
-        h3 {
-            font-family: 'Playfair Display', serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        [hidden] { display: none !important; }
     </style>
+    <script src="legal.js"></script>
 </head>
 
 <body class="bg-zinc-50 text-zinc-900">
     <div class="max-w-3xl mx-auto px-6 py-12">
-        <a href="../index.html"
-            class="text-xs uppercase tracking-widest text-zinc-500 hover:text-black transition mb-8 block">← Torna alla
-            Boutique</a>
-
-        <h1 class="text-4xl font-bold mb-8">Termini e Condizioni di Vendita</h1>
-        <p class="text-sm text-zinc-500 mb-8">Ultimo aggiornamento: Gennaio 2026</p>
-
-        <div class="space-y-6 text-justify">
-            <section>
-                <h2 class="text-xl font-bold mb-2">1. Prodotti Artigianali</h2>
-                <p>Boutique LM vende prodotti realizzati artigianalmente, spesso utilizzando materiali di recupero
-                    (upcycling) da brand di lusso. Ogni irregolarità o imperfezione è da considerarsi una caratteristica
-                    intrinseca del prodotto unico e non un difetto.</p>
-            </section>
-
-            <section>
-                <h2 class="text-xl font-bold mb-2">2. Disponibilità</h2>
-                <p>Essendo pezzi unici o in serie limitata, la disponibilità è aggiornata in tempo reale. Tuttavia, in
-                    rari casi di ordini simultanei, ci riserviamo il diritto di annullare l'ordine e rimborsare
-                    immediatamente l'interezza della somma versata.</p>
-            </section>
-
-            <section>
-                <h2 class="text-xl font-bold mb-2">3. Prezzi e Pagamenti</h2>
-                <p>Tutti i prezzi sono espressi in Euro. Il pagamento avviene tramite piattaforma sicura Stripe o altri
-                    metodi indicati al checkout.</p>
-            </section>
-
-            <section>
-                <h2 class="text-xl font-bold mb-2">4. Spedizioni</h2>
-                <p>Le spedizioni vengono effettuate entro 2-5 giorni lavorativi. Boutique LM non è responsabile per
-                    ritardi dovuti al corriere, ma fornirà tutta l'assistenza necessaria per tracciare il pacco.</p>
-            </section>
-
-            <section>
-                <h2 class="text-xl font-bold mb-2">5. Diritto di Recesso</h2>
-                <p>Conformemente alla normativa vigente, lei ha il diritto di recedere dal contratto entro 14 giorni
-                    dalla ricezione del prodotto. Il prodotto deve essere restituito integro, mai utilizzato e nella
-                    confezione originale. Le spese di spedizione per il reso sono a carico del cliente.</p>
-            </section>
-
-            <section>
-                <h2 class="text-xl font-bold mb-2">6. Contatti</h2>
-                <p>Per qualsiasi esigenza, contattaci a: info@boutiquelm.it</p>
-            </section>
+        <div class="flex items-center justify-between mb-8">
+            <a href="../index.html" class="text-xs uppercase tracking-widest text-zinc-500 hover:text-black transition">
+                <span data-l="it">← Torna alla Boutique</span><span data-l="en" hidden>← Back to the Boutique</span></a>
+            <div class="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em]">
+                <button data-lang-btn="it" onclick="setLegalLang('it')">IT</button><span class="text-zinc-300">/</span><button data-lang-btn="en" onclick="setLegalLang('en')">EN</button>
+            </div>
         </div>
 
-        <footer class="mt-12 pt-8 border-t border-zinc-200 text-center text-xs text-zinc-400">
-            &copy; 2026 Boutique LM - Tutti i diritti riservati.
-        </footer>
+        <h1 class="text-4xl font-bold mb-2"><span data-l="it">Termini e Condizioni di Vendita</span><span data-l="en" hidden>Terms and Conditions of Sale</span></h1>
+        <p class="text-xs text-zinc-400 mb-10"><span data-l="it">Ultimo aggiornamento: Ottobre 2026</span><span data-l="en" hidden>Last updated: October 2026</span></p>
+
+        <div data-l="it">
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">1. Venditore</h2><div class="text-sm leading-relaxed text-zinc-700">Il venditore è Boutique LM (<mark class="bg-yellow-200 px-1 rounded">[RAGIONE SOCIALE / NOME E COGNOME DEL TITOLARE]</mark>, P.IVA <mark class="bg-yellow-200 px-1 rounded">[•]</mark>, sede <mark class="bg-yellow-200 px-1 rounded">[INDIRIZZO]</mark>), e-mail <a class="underline" href="mailto:info@boutiquelm.it">info@boutiquelm.it</a>. Effettuando un ordine accetti i presenti Termini.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">2. Prodotti</h2><div class="text-sm leading-relaxed text-zinc-700">Boutique LM vende borse e accessori di lusso autentici di seconda mano (pre-owned) e prodotti artigianali realizzati con materiali di recupero (upcycling). Le condizioni di ogni articolo sono descritte nella scheda e nelle fotografie: segni del tempo coerenti con la descrizione non sono difetti. I prodotti upcycled non sono concessi in licenza, approvati o affiliati ai marchi di origine, che restano di proprietà dei rispettivi titolari.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">3. Autenticità</h2><div class="text-sm leading-relaxed text-zinc-700">Ogni articolo venduto come autentico è verificato. Se un articolo risultasse non autentico, il prezzo pagato viene rimborsato integralmente.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">4. Disponibilità</h2><div class="text-sm leading-relaxed text-zinc-700">Molti articoli sono pezzi unici. In rari casi di ordini simultanei o di errore di aggiornamento della disponibilità, Boutique LM può annullare l'ordine e rimborsare immediatamente l'intero importo pagato.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">5. Prezzi e pagamenti</h2><div class="text-sm leading-relaxed text-zinc-700">I prezzi sono in Euro. <mark class="bg-yellow-200 px-1 rounded">[Indicare se i prezzi includono IVA o sono soggetti al regime del margine per beni usati]</mark> Il pagamento avviene tramite Stripe. Per le spedizioni fuori dall'Unione Europea eventuali dazi, imposte e spese doganali sono a carico dell'acquirente.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">6. Spedizioni</h2><div class="text-sm leading-relaxed text-zinc-700">Gli ordini vengono preparati entro 2-5 giorni lavorativi e spediti con corriere tracciato verso i Paesi indicati al momento del pagamento. Costi e tempi di consegna sono mostrati al checkout. Boutique LM non risponde dei ritardi imputabili al corriere ma assiste il cliente nel tracciamento. La consegna a mano è possibile a Firenze previo accordo.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">7. Diritto di recesso (consumatori)</h2><div class="text-sm leading-relaxed text-zinc-700">Se acquisti come consumatore nell'Unione Europea puoi recedere senza indicare il motivo entro 14 giorni dal ricevimento del prodotto, scrivendo a info@boutiquelm.it. Il prodotto deve essere restituito integro, non utilizzato e nella confezione originale entro 14 giorni dalla comunicazione di recesso. Le spese di restituzione sono a carico del cliente. Il rimborso è effettuato entro 14 giorni dal ricevimento del reso, con lo stesso metodo di pagamento. Il recesso non si applica ai beni su misura o chiaramente personalizzati e ai servizi di atelier già eseguiti con il tuo consenso.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">8. Garanzia legale</h2><div class="text-sm leading-relaxed text-zinc-700">Ai consumatori si applica la garanzia legale di conformità prevista dal Codice del Consumo (artt. 128 e ss.), nei limiti consentiti per i beni usati. Per far valere la garanzia scrivi a info@boutiquelm.it con descrizione del problema e fotografie.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">9. Servizi di atelier</h2><div class="text-sm leading-relaxed text-zinc-700">Restauro, upcycling e autenticazione sono forniti su preventivo, concordato per iscritto (e-mail o WhatsApp) prima dell'esecuzione.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">10. Legge applicabile</h2><div class="text-sm leading-relaxed text-zinc-700">I presenti Termini sono regolati dalla legge italiana. Ai consumatori restano applicabili le norme inderogabili di tutela del Paese in cui risiedono. Il foro competente per i consumatori è quello della loro residenza o domicilio.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">11. Contatti</h2><div class="text-sm leading-relaxed text-zinc-700">Per qualsiasi esigenza scrivi a <a class="underline" href="mailto:info@boutiquelm.it">info@boutiquelm.it</a>.</div></section>
+        </div>
+        <div data-l="en" hidden>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">1. Seller</h2><div class="text-sm leading-relaxed text-zinc-700">The seller is Boutique LM (<mark class="bg-yellow-200 px-1 rounded">[LEGAL NAME / OWNER NAME]</mark>, VAT no. <mark class="bg-yellow-200 px-1 rounded">[•]</mark>, registered office <mark class="bg-yellow-200 px-1 rounded">[ADDRESS]</mark>), e-mail <a class="underline" href="mailto:info@boutiquelm.it">info@boutiquelm.it</a>. By placing an order you accept these Terms.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">2. Products</h2><div class="text-sm leading-relaxed text-zinc-700">Boutique LM sells authentic pre-owned luxury bags and accessories and handmade products made from recovered materials (upcycling). The condition of each item is described on its page and in the photographs: signs of age consistent with the description are not defects. Upcycled products are not licensed, endorsed by or affiliated with the original brands, which remain the property of their respective owners.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">3. Authenticity</h2><div class="text-sm leading-relaxed text-zinc-700">Every item sold as authentic is verified. If an item were found not to be authentic, the price paid will be refunded in full.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">4. Availability</h2><div class="text-sm leading-relaxed text-zinc-700">Many items are one-of-a-kind. In rare cases of simultaneous orders or availability errors, Boutique LM may cancel the order and immediately refund the full amount paid.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">5. Prices and payment</h2><div class="text-sm leading-relaxed text-zinc-700">Prices are in Euro. <mark class="bg-yellow-200 px-1 rounded">[State whether prices include VAT or fall under the second-hand margin scheme]</mark> Payment is processed by Stripe. For shipments outside the European Union, any duties, taxes and customs fees are borne by the buyer.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">6. Shipping</h2><div class="text-sm leading-relaxed text-zinc-700">Orders are prepared within 2-5 business days and shipped by tracked courier to the countries offered at checkout. Shipping costs and delivery times are shown at checkout. Boutique LM is not responsible for courier delays but will help you track your parcel. Hand delivery is available in Florence by prior arrangement.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">7. Right of withdrawal (consumers)</h2><div class="text-sm leading-relaxed text-zinc-700">If you buy as a consumer in the European Union, you may withdraw from the contract without giving a reason within 14 days of receiving the product by writing to info@boutiquelm.it. The product must be returned intact, unused and in its original packaging within 14 days of notifying us of your withdrawal. Return shipping costs are borne by the customer. Refunds are issued within 14 days of receiving the returned item, using the original payment method. The right of withdrawal does not apply to made-to-measure or clearly personalised goods, nor to atelier services already performed with your consent.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">8. Legal guarantee</h2><div class="text-sm leading-relaxed text-zinc-700">Consumers are covered by the statutory guarantee of conformity under applicable consumer law, within the limits allowed for second-hand goods. To make a claim, write to info@boutiquelm.it with a description of the problem and photographs.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">9. Atelier services</h2><div class="text-sm leading-relaxed text-zinc-700">Restoration, upcycling and authentication are provided on quotation, agreed in writing (e-mail or WhatsApp) before work begins.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">10. Governing law</h2><div class="text-sm leading-relaxed text-zinc-700">These Terms are governed by Italian law. Consumers keep the mandatory protections of the country where they live. Consumers may bring proceedings in the courts of their place of residence.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">11. Contact</h2><div class="text-sm leading-relaxed text-zinc-700">For anything else, write to <a class="underline" href="mailto:info@boutiquelm.it">info@boutiquelm.it</a>.</div></section>
+        </div>
+
+        <p class="text-xs text-zinc-400 mt-12">&copy; 2026 Boutique LM</p>
     </div>
 </body>
 

@@ -1,11 +1,73 @@
 # ✅ Boutique LM — Cose da fare (solo te, niente codice)
 
-Tutto il codice è completo e in produzione su https://boutiquelm.it
-Le azioni qui sotto sono solo configurazione e gestione operativa.
+Il sito è online su https://boutiquelm.web.app (il dominio boutiquelm.it non è ancora attivo).
+Lo storico delle modifiche è in `CHANGELOG.md`.
 
 ---
 
-## 🔴 Prima del lancio marketing (urgente)
+## 🔴 Per poter vendere online (urgente)
+
+### 1. Crea i link di pagamento Stripe (automatico)
+Finché un prodotto non ha il link Stripe, "Procedi al pagamento" apre WhatsApp / e-mail con l'ordine già scritto.
+Per creare tutti i link in un colpo (con indirizzo di spedizione, telefono e limite di 1 vendita per i pezzi unici):
+1. Su https://dashboard.stripe.com crea una **chiave API** (Sviluppatori → Chiavi API). Prima prova con la chiave di **test** (`sk_test_…`).
+2. (Facoltativo) Crea una tariffa di spedizione in Stripe (Prodotti → Tariffe di spedizione) e copia il suo id (`shr_…`).
+3. Apri PowerShell nella cartella del progetto e lancia:
+```
+$env:STRIPE_SECRET_KEY = "sk_test_..."
+$env:STRIPE_SHIPPING_RATE_ID = "shr_..."        # solo se l'hai creata
+python tools/create-stripe-links.py              # anteprima, non crea nulla
+python tools/create-stripe-links.py --apply      # crea i link
+npx firebase deploy --only hosting               # li pubblica
+```
+4. Prova un acquisto di test (carta `4242 4242 4242 4242`). Poi ripeti con la chiave **live**, dopo aver svuotato `stripe-links.json` (`{}`).
+5. Mai scrivere la chiave in un file o inviarla in chat: va solo nella sessione di PowerShell.
+
+Per un prodotto nuovo basta rilanciare lo script: crea solo i link mancanti. Un link impostato a mano nel campo "Link Stripe" dell'admin ha la precedenza.
+
+### 2. AI Stylist: limita la chiave e pubblica le regole
+L'AI Stylist non rispondeva perché Google ha ritirato il modello e la chiave non era leggibile dai visitatori.
+Il codice è già corretto; mancano due azioni tue:
+1. https://console.cloud.google.com → API e servizi → Credenziali → apri la chiave Gemini → **Restrizioni applicazione: Referrer HTTP**
+   (`boutiquelm.web.app/*` e `boutiquelm.it/*`) → **Restrizioni API: solo Generative Language API** → imposta una quota giornaliera bassa.
+2. Poi pubblica le regole: `npx firebase deploy --only firestore:rules`
+   (rende leggibile a tutti `config/settings`, che contiene solo la chiave).
+
+### 3. Compila i dati legali
+Nei file `legal/terms.html` e `legal/privacy.html` cerca le scritte su sfondo giallo: ragione sociale, P.IVA, sede, regime IVA.
+Fai rivedere le pagine da un commercialista o da un legale prima di vendere all'estero.
+
+### 4. Dominio boutiquelm.it
+1. Acquista il dominio.
+2. Console Firebase → Hosting → **Aggiungi dominio personalizzato** e segui i passaggi DNS.
+3. Rigenera la SEO con il nuovo dominio:
+```
+$env:SITE_URL = "https://boutiquelm.it"; python tools/build-seo.py
+```
+   e sostituisci `https://boutiquelm.web.app` con `https://boutiquelm.it` in `index.html` (canonical, hreflang, dati strutturati)
+   e nel link di ritorno dei Payment Link Stripe (`/?ordine=ok`). Poi `npx firebase deploy --only hosting`.
+
+---
+
+## 🟡 Per avere più traffico (SEO)
+
+- Dopo ogni modifica al catalogo: `python tools/build-seo.py` e `npx firebase deploy --only hosting`
+  (aggiorna le pagine prodotto indicizzabili, `sitemap.xml` e `robots.txt`).
+- Registra il sito su https://search.google.com/search-console e invia `sitemap.xml`.
+- Compila "Description (EN)" per i prodotti nuovi (o usa "✨ Traduci in inglese" nell'admin): le pagine inglesi servono per essere trovati dall'estero.
+- Metti nel profilo Instagram e TikTok il link al sito e usa i link `…/p/<prodotto>.html` nei post.
+
+---
+
+## 🔧 Dati prodotto da correggere (admin)
+
+- "Fendi Valigia Vintage Zucca FF" ha la descrizione di una Prada Business Bag.
+- Senza descrizione: Fendi Baguette, Maison Margiela Bag on Chain, Gucci Microguccissima, Prada Saffiano, Burberry Card Case (Pelle Cuoio), Keyholder.
+- Due "Cardholder Moschino Couture" hanno lo stesso nome e colori diversi: meglio distinguerli nel nome.
+
+---
+
+## 🔴 Prima del lancio marketing
 
 ### 1. Elimina i prodotti di test
 - Vai su boutiquelm.it/#admin → login → tab **Inventario**
@@ -97,5 +159,5 @@ vendite cresce significativamente e la gestione manuale diventa onerosa.
 
 ---
 
-*Ultimo aggiornamento codice: 20 Giugno 2026*
-*Sito live: https://boutiquelm.it | https://boutiquelm.web.app*
+*Ultimo aggiornamento: 6 Ottobre 2026*
+*Sito live: https://boutiquelm.web.app*

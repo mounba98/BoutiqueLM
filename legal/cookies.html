@@ -1,62 +1,52 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-title-it="Cookie Policy - Boutique LM" data-title-en="Cookie Policy - Boutique LM">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cookie Policy - Boutique LM</title>
+    <meta name="robots" content="index, follow">
     <script src="https://cdn.tailwindcss.com"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap"
         rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        h1,
-        h2,
-        h3 {
-            font-family: 'Playfair Display', serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        [hidden] { display: none !important; }
     </style>
+    <script src="legal.js"></script>
 </head>
 
 <body class="bg-zinc-50 text-zinc-900">
     <div class="max-w-3xl mx-auto px-6 py-12">
-        <a href="../index.html"
-            class="text-xs uppercase tracking-widest text-zinc-500 hover:text-black transition mb-8 block">← Torna alla
-            Boutique</a>
-
-        <h1 class="text-4xl font-bold mb-8">Cookie Policy</h1>
-
-        <div class="space-y-6 text-justify">
-            <section>
-                <h2 class="text-xl font-bold mb-2">Cosa sono i Cookie</h2>
-                <p>I cookie sono piccoli file di testo che i siti salvano sul tuo dispositivo per migliorare
-                    l'esperienza di navigazione.</p>
-            </section>
-
-            <section>
-                <h2 class="text-xl font-bold mb-2">Cookie Utilizzati</h2>
-                <ul class="list-disc pl-5 mt-2 space-y-2">
-                    <li><strong>Cookie Tecnici (Necessari):</strong> Indispensabili per il funzionamento del sito (es.
-                        carrello, login area riservata). Non richiedono consenso.</li>
-                    <li><strong>Cookie Analitici:</strong> Utilizziamo Google Firebase Analytics in forma anonima per
-                        capire come viene usato il sito.</li>
-                </ul>
-            </section>
-
-            <section>
-                <h2 class="text-xl font-bold mb-2">Gestione dei Cookie</h2>
-                <p>Puoi disattivare i cookie dalle impostazioni del tuo browser, ma alcune funzioni del sito (come il
-                    carrello) potrebbero non funzionare correttamente.</p>
-            </section>
+        <div class="flex items-center justify-between mb-8">
+            <a href="../index.html" class="text-xs uppercase tracking-widest text-zinc-500 hover:text-black transition">
+                <span data-l="it">← Torna alla Boutique</span><span data-l="en" hidden>← Back to the Boutique</span></a>
+            <div class="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em]">
+                <button data-lang-btn="it" onclick="setLegalLang('it')">IT</button><span class="text-zinc-300">/</span><button data-lang-btn="en" onclick="setLegalLang('en')">EN</button>
+            </div>
         </div>
 
-        <footer class="mt-12 pt-8 border-t border-zinc-200 text-center text-xs text-zinc-400">
-            &copy; 2026 Boutique LM.
-        </footer>
+        <h1 class="text-4xl font-bold mb-2"><span data-l="it">Cookie Policy</span><span data-l="en" hidden>Cookie Policy</span></h1>
+        <p class="text-xs text-zinc-400 mb-10"><span data-l="it">Ultimo aggiornamento: Ottobre 2026</span><span data-l="en" hidden>Last updated: October 2026</span></p>
+
+        <div data-l="it">
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">Cosa sono</h2><div class="text-sm leading-relaxed text-zinc-700">I cookie e le tecnologie simili (come localStorage) sono piccoli dati che il sito salva sul tuo dispositivo.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">Tecnici (necessari)</h2><div class="text-sm leading-relaxed text-zinc-700">Servono al funzionamento del sito: carrello, lingua scelta, ricordare la tua scelta sui cookie e l'accesso all'area riservata. Non richiedono consenso.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">Analitici (solo con consenso)</h2><div class="text-sm leading-relaxed text-zinc-700">Con il tuo consenso usiamo Google Analytics (tramite Firebase) per capire come viene usato il sito e migliorarlo. Se rifiuti, Google Analytics non viene avviato.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">Servizi di terze parti</h2><div class="text-sm leading-relaxed text-zinc-700">Quando passi al pagamento vieni portato sul sito di Stripe, che usa i propri cookie secondo la propria informativa.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">Gestire le tue scelte</h2><div class="text-sm leading-relaxed text-zinc-700">Puoi cambiare idea in qualsiasi momento con il link "Preferenze cookie" in fondo a ogni pagina, oppure dalle impostazioni del browser.</div></section>
+        </div>
+        <div data-l="en" hidden>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">What they are</h2><div class="text-sm leading-relaxed text-zinc-700">Cookies and similar technologies (such as localStorage) are small pieces of data a site stores on your device.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">Technical (necessary)</h2><div class="text-sm leading-relaxed text-zinc-700">These make the site work: cart, chosen language, remembering your cookie choice and access to the private area. They do not require consent.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">Analytics (consent only)</h2><div class="text-sm leading-relaxed text-zinc-700">With your consent we use Google Analytics (through Firebase) to understand how the site is used and improve it. If you decline, Google Analytics is not started.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">Third-party services</h2><div class="text-sm leading-relaxed text-zinc-700">When you go to payment you are taken to Stripe's site, which uses its own cookies under its own policy.</div></section>
+        <section class="mb-8"><h2 class="text-xl font-bold mb-2">Managing your choices</h2><div class="text-sm leading-relaxed text-zinc-700">You can change your mind at any time with the "Cookie preferences" link at the bottom of every page, or from your browser settings.</div></section>
+        </div>
+
+        <p class="text-xs text-zinc-400 mt-12">&copy; 2026 Boutique LM</p>
     </div>
 </body>
 

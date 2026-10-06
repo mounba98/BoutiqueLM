@@ -3,7 +3,7 @@
 Sito e-commerce di **Boutique LM — Luxury Reselling & Atelier Services**: vendita di
 articoli di lusso di seconda mano e servizi di atelier.
 
-- Sito live: https://boutiquelm.it (alias: https://boutiquelm.web.app)
+- Sito live: https://boutiquelm.web.app (dominio `boutiquelm.it` da attivare)
 - Progetto Firebase: `boutiquelm`
 
 ## Stack
@@ -15,7 +15,7 @@ articoli di lusso di seconda mano e servizi di atelier.
 | Database e immagini | Firebase Firestore e Firebase Storage |
 | Accesso admin | Firebase Authentication (email/password) |
 | Hosting | Firebase Hosting |
-| Pagamenti | Stripe Payment Links (uno per prodotto) |
+| Pagamenti | Stripe Payment Links (uno per prodotto, creati con `tools/create-stripe-links.py`) |
 | AI (stylist e storie vintage) | Google Gemini, con chiave salvata dal pannello admin |
 | Statistiche | Google Analytics |
 
@@ -23,14 +23,23 @@ articoli di lusso di seconda mano e servizi di atelier.
 
 - Catalogo dinamico da Firestore, filtri per categoria, ordinamento, sezione "In Vetrina".
 - Dettaglio prodotto con galleria, varianti (taglia/colore) e stock per variante.
-- Carrello e pagamento tramite link Stripe; i servizi (restauro, preventivi) rimandano a WhatsApp o e-mail.
+- Carrello (conservato nel browser) e pagamento tramite link Stripe, un articolo alla volta; senza link Stripe o per i servizi si conclude via WhatsApp / e-mail.
+- Sito in italiano e inglese: lingua scelta dal browser del visitatore, selettore IT / EN, dizionario `I18N_EN` in `index.html` e traduzioni dei prodotti in `products-en.json` (o nei campi EN dell'admin).
+- Banner cookie con consenso: Google Analytics parte solo se il visitatore accetta.
+- Pagine prodotto statiche indicizzabili (`/p/…`), `sitemap.xml` e `robots.txt` generati da `tools/build-seo.py`.
 - Pannello admin su `/#admin`: prodotti, stock, categorie, priorità vetrina, esportazione CSV, configurazione AI.
 
 ## Struttura della cartella
 
 ```
 index.html          Il sito (frontend + pannello admin)
-legal/              Privacy, cookie, termini
+legal/              Privacy, cookie, termini (italiano e inglese)
+products-en.json    Nomi, descrizioni e note dei prodotti in inglese (chiave = id Firestore)
+stripe-links.json   Link di pagamento Stripe per prodotto (generato da tools/create-stripe-links.py)
+p/                  Pagine prodotto statiche per Google (generate da tools/build-seo.py)
+sitemap.xml, robots.txt   Per i motori di ricerca (generati)
+tools/              Script: create-stripe-links.py, build-seo.py
+CHANGELOG.md        Registro di tutte le modifiche
 logo.png            Logo
 firebase.json       Configurazione Hosting, Firestore e Storage
 .firebaserc         Progetto Firebase collegato
@@ -64,8 +73,11 @@ npx firebase login
 npx firebase deploy
 ```
 
-oppure `deploy_website.cmd`, che guida i passaggi. Il deploy pubblica anche le regole di
-sicurezza di Firestore e Storage definite in questa cartella.
+oppure `deploy_website.cmd`, che guida i passaggi. Il deploy completo pubblica anche le regole di
+sicurezza di Firestore e Storage definite in questa cartella: per pubblicare **solo il sito**, senza toccare le regole,
+usa `npx firebase deploy --only hosting`.
+
+Dopo ogni modifica al catalogo prodotti: `python tools/build-seo.py` e poi il deploy dell'hosting.
 
 ## Sicurezza
 
@@ -75,12 +87,14 @@ sicurezza di Firestore e Storage definite in questa cartella.
   le stesse dei file.
 - La chiave Firebase presente in `index.html` è una chiave web pubblica per progettazione:
   la protezione sono le regole sopra, non la chiave.
-- La chiave Gemini **non** è nel codice: si imposta dal pannello admin e resta in Firestore,
-  leggibile solo da utenti autenticati.
+- La chiave Gemini **non** è nel codice: si imposta dal pannello admin e resta in Firestore (`config/settings`).
+  Perché l'AI Stylist funzioni per i visitatori la lettura di quel documento è pubblica (`firestore.rules`):
+  la chiave va quindi **limitata nella Google Cloud Console** (referrer HTTP del sito, solo Generative Language API, quota giornaliera).
+- Lo stock non si scala dal browser (le regole lo impediscono ai visitatori): si azzera da `/#admin` dopo ogni vendita.
 - Non salvare nel repository password, chiavi API private o file `.env`.
 
 ## Gestione quotidiana
 
 - Gli ordini arrivano solo su https://dashboard.stripe.com (e per e-mail da Stripe), non nel pannello admin.
 - Quando vendi un pezzo, azzera lo stock da `/#admin` → Inventario → Modifica.
-- Istruzioni complete: `overview.md`, `instructions.md`, `TODO.md`.
+- Istruzioni complete: `overview.md`, `instructions.md`, `TODO.md`. Storico modifiche: `CHANGELOG.md`.
