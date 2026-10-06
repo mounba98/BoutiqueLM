@@ -191,11 +191,18 @@
                 <button onclick="openStylist()" class="text-zinc-900 font-bold italic border-b border-black">✨ AI
                     STYLIST</button>
             </div>
-            <button onclick="toggleCart(true)" class="relative p-2 hover:bg-zinc-100 rounded-full transition">
-                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-                <span id="cart-count"
-                    class="absolute -top-1 -right-1 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">0</span>
-            </button>
+            <div class="flex items-center gap-1 md:gap-3">
+                <div class="no-i18n hidden md:flex items-center gap-2 text-[10px] font-bold tracking-[0.2em]" role="group" aria-label="Language">
+                    <button data-lang="it" onclick="setLang('it', true)" class="border-b pb-0.5 transition hover:text-black text-black border-black">IT</button>
+                    <span class="text-zinc-300">/</span>
+                    <button data-lang="en" onclick="setLang('en', true)" class="border-b pb-0.5 transition hover:text-black text-zinc-400 border-transparent">EN</button>
+                </div>
+                <button onclick="toggleCart(true)" class="relative p-2 hover:bg-zinc-100 rounded-full transition">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    <span id="cart-count"
+                        class="absolute -top-1 -right-1 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">0</span>
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -210,6 +217,10 @@
                 <a href="#servizi" onclick="showView('home'); toggleMenu()">Servizi</a>
                 <a href="#storia" onclick="showView('home'); toggleMenu()">Chi siamo</a>
                 <button onclick="openStylist(); toggleMenu()" class="text-left text-zinc-600">✨ AI Stylist</button>
+                <div class="no-i18n flex items-center gap-4 text-sm font-sans font-bold tracking-[0.2em] pt-4 border-t border-zinc-100" role="group" aria-label="Language">
+                    <button data-lang="it" onclick="setLang('it', true)" class="border-b pb-0.5 transition text-black border-black">IT</button>
+                    <button data-lang="en" onclick="setLang('en', true)" class="border-b pb-0.5 transition text-zinc-400 border-transparent">EN</button>
+                </div>
             </div>
         </div>
     </div>
@@ -550,6 +561,280 @@
         </svg>
     </a>
 
+    <!-- ==================== I18N (IT / EN) ==================== -->
+    <!-- Il sito è scritto in italiano (lingua di default, resta nell'HTML per SEO e zero flash).
+         Per l'inglese si usa questo dizionario IT -> EN. Aggiungere una frase = aggiungere una riga. -->
+    <script>
+        const I18N_EN = {
+            // Navigazione
+            "Collezione": "Collection",
+            "Servizi": "Services",
+            "Chi siamo": "About us",
+            // Modali
+            "Es: Cerco un regalo unico per una persona che ama il vintage...": "E.g. I'm looking for a unique gift for someone who loves vintage...",
+            "Chiedi consiglio": "Ask for advice",
+            "Richiedi Preventivo": "Request a Quote",
+            "Come preferisci metterti in contatto con l'Atelier?": "How would you like to get in touch with the Atelier?",
+            // Carrello
+            "Il tuo carrello": "Your cart",
+            "Il tuo carrello è vuoto.": "Your cart is empty.",
+            "Il carrello è vuoto.": "Your cart is empty.",
+            "Totale": "Total",
+            "Procedi al pagamento": "Proceed to checkout",
+            "Sincronizzazione Stock Attiva": "Live stock sync active",
+            "Verifica Stock...": "Checking stock...",
+            "Reindirizzamento Stripe...": "Redirecting to Stripe...",
+            // Home
+            "Firenze • Luxury Reselling": "Florence • Luxury Reselling",
+            "Il Lusso Autentico.": "Authentic Luxury.",
+            "Borse e accessori di grandi maison, selezionati e autenticati. Pezzi rari a prezzi accessibili.": "Handbags and accessories from the great maisons, hand-selected and authenticated. Rare pieces at accessible prices.",
+            "Scopri la Collezione": "Discover the Collection",
+            "Spedizione Express 24/48h": "Express Shipping 24/48h",
+            "Autenticità Garantita": "Authenticity Guaranteed",
+            "Atelier Firenze": "Atelier Florence",
+            "Restauro & Upcycling su Richiesta": "Restoration & Upcycling on Request",
+            "Selezione Esclusiva": "Exclusive Selection",
+            "In Vetrina": "Featured",
+            "Tutta la Collezione ↓": "Full Collection ↓",
+            "pezzo": "piece",
+            "pezzi": "pieces",
+            "disponibili": "available",
+            "Vedi tutti": "View all",
+            "Chiudi ↑": "Close ↑",
+            // Servizi
+            "Su Richiesta": "On Request",
+            "Servizi Atelier": "Atelier Services",
+            "Oltre alla vendita, il nostro atelier fiorentino offre servizi esclusivi di restauro e trasformazione su misura.": "Beyond sales, our Florentine atelier offers exclusive restoration and bespoke transformation services.",
+            "Restauro": "Restoration",
+            "Ripristiniamo borse e accessori di lusso al loro splendore originale. Cuciture, trattamenti, rifinitura del cuoio.": "We bring luxury bags and accessories back to their original splendor. Stitching, treatments, leather finishing.",
+            "Su preventivo": "Quote on request",
+            "Trasformiamo materiali autentici di archivio in nuovi accessori unici. Ogni pezzo è irripetibile.": "We transform authentic archive materials into unique new accessories. Every piece is one of a kind.",
+            "Autenticazione": "Authentication",
+            "Valutazione professionale dell'autenticità e dello stato di conservazione dei tuoi articoli di lusso.": "Professional assessment of the authenticity and condition of your luxury items.",
+            "Su appuntamento": "By appointment",
+            // Form
+            "Richiedi informazioni": "Request information",
+            "Descrivici cosa hai in mente. Ti risponderemo entro 24 ore.": "Tell us what you have in mind. We'll reply within 24 hours.",
+            "Nome *": "Name *",
+            "Il tuo nome": "Your name",
+            "tua@email.com": "you@email.com",
+            "Tipo di servizio": "Service type",
+            "Upcycling / Trasformazione": "Upcycling / Transformation",
+            "Autenticazione / Valutazione": "Authentication / Appraisal",
+            "Altro / Informazioni generali": "Other / General information",
+            "Il tuo messaggio *": "Your message *",
+            "Descrivi il tuo articolo e cosa vorresti fare...": "Describe your item and what you'd like done...",
+            "✅ Richiesta inviata! Ti contatteremo presto.": "✅ Request sent! We'll be in touch soon.",
+            "Invia per Email": "Send by Email",
+            "Scrivi su WhatsApp": "Message on WhatsApp",
+            "Richiesta": "Request",
+            "Nome": "Name",
+            "Servizio": "Service",
+            "Messaggio": "Message",
+            "Cliente": "Customer",
+            "Ciao Boutique LM! Sono": "Hello Boutique LM! I'm",
+            "Vorrei richiedere informazioni per:": "I'd like to request information about:",
+            "Potete contattarmi per un preventivo?": "Could you contact me for a quote?",
+            // Chi siamo
+            "Luxury reselling con cuore fiorentino": "Luxury reselling with a Florentine heart",
+            "Selezioniamo e vendiamo borse e accessori autentici delle più grandi maison internazionali — Hermès, Chanel, Louis Vuitton e altri. Ogni pezzo è verificato e garantito.": "We select and sell authentic bags and accessories from the world's greatest international maisons — Hermès, Chanel, Louis Vuitton and more. Every piece is verified and guaranteed.",
+            "Offriamo anche, su richiesta, servizi artigianali di restauro e trasformazione per chi vuole dare nuova vita ai propri pezzi d'archivio.": "On request, we also offer artisan restoration and transformation services for those who want to give new life to their archive pieces.",
+            "\"Autenticità, selezione, rarità.\"": "\"Authenticity, selection, rarity.\"",
+            // Dettaglio prodotto
+            "Caricamento...": "Loading...",
+            "Esaurito": "Sold out",
+            "(Esaurito)": "(Sold out)",
+            "Variante": "Variant",
+            "Variante Esaurita": "Variant sold out",
+            "Codice Interno": "Internal Code",
+            "Origine": "Origin",
+            "Condizione": "Condition",
+            "Materiale": "Material",
+            "N° Seriale / Codice": "Serial No. / Code",
+            "Nota Atelier": "Atelier Note",
+            "Scopri la storia": "Discover the story",
+            "Scopri la storia e la provenienza di questo pezzo...": "Discover the story and provenance of this piece...",
+            "Aggiungi al carrello": "Add to cart",
+            "Condividi": "Share",
+            "Nome Prodotto": "Product Name",
+            "Su Preventivo": "Quote on Request",
+            "Richiedi Valutazione": "Request Appraisal",
+            "Richiesta Preventivo": "Quote Request",
+            "Codice": "Code",
+            "Salve Atelier Boutique LM, vorrei richiedere informazioni/preventivo per il prodotto:": "Hello Boutique LM Atelier, I would like to request information/a quote for the product:",
+            "Richiesta Ordine Misto & Preventivo": "Mixed Order & Quote Request",
+            "Salve Atelier Boutique LM, vorrei procedere con il seguente ordine:": "Hello Boutique LM Atelier, I would like to proceed with the following order:",
+            "Attendo dettagli per il pagamento e preventivo.": "I look forward to the payment details and quote.",
+            // Avvisi
+            "Spiacenti, questa variante è esaurita.": "Sorry, this variant is sold out.",
+            "Spiacenti, la variante selezionata è terminata durante la transazione.": "Sorry, the selected variant sold out during the transaction.",
+            "Variante esaurita.": "Variant sold out.",
+            "ATTENZIONE: Link di pagamento mancante o prodotto esaurito.": "WARNING: Payment link missing or product sold out.",
+            // AI Stylist
+            "AI Stylist sta analizzando la collezione...": "AI Stylist is browsing the collection...",
+            "AI Stylist sta analizzando il pezzo...": "AI Stylist is analyzing this piece...",
+            "L'AI è momentaneamente offline.": "The AI is temporarily offline.",
+            "Informazioni non disponibili al momento.": "Information not available at the moment.",
+            // Condividi
+            "Scopri": "Discover",
+            "su Boutique LM — luxury reselling Firenze": "on Boutique LM — luxury reselling in Florence",
+            "Link copiato!": "Link copied!",
+            "Copia il link:": "Copy the link:",
+            // Banner ordine
+            "Ordine completato!": "Order complete!",
+            "Grazie per aver scelto Boutique LM. Riceverai una conferma a breve.": "Thank you for choosing Boutique LM. You will receive a confirmation shortly.",
+            // Footer
+            "Termini & Condizioni": "Terms & Conditions",
+            "Luxury Reselling & Atelier Services • Firenze • 2025": "Luxury Reselling & Atelier Services • Florence • 2025",
+            // Categorie e valori ricorrenti dei prodotti (i testi liberi non presenti restano in italiano)
+            "Borse & Pouch": "Bags & Pouches",
+            "Piccola Pelletteria": "Small Leather Goods",
+            "Valigie": "Luggage",
+            "Nuovo": "New",
+            "Usato": "Used",
+            "Come Nuova": "Like New",
+            "Pari al Nuovo": "As Good as New",
+            "Usato, pari al nuovo": "Used, as good as new",
+            "Pelle": "Leather",
+            "Pelle di Pitone": "Python Leather",
+            "Pelle Verniciata": "Patent Leather",
+            "Pelle, tessuto": "Leather, fabric",
+            "Nylon, Pelle": "Nylon, Leather",
+            "Italia": "Italy",
+            "italia": "Italy"
+        };
+        const I18N_META_EN = {
+            description: "Boutique LM: authentic luxury bags and accessories. Hermès, Chanel, Louis Vuitton and other great brands. Restoration and upcycling services on request.",
+            ogDescription: "Selected authentic luxury bags and accessories. Discover the Boutique LM collection — certified reselling and restoration services on request."
+        };
+
+        let LANG = 'it';
+        const _norm = s => s.replace(/\s+/g, ' ').trim();
+        const _i18nTextOrig = new WeakMap();   // nodo di testo -> testo italiano originale
+        const _i18nPhOrig = new WeakMap();     // elemento -> placeholder italiano originale
+        const _i18nMetaOrig = {};
+
+        // Traduce una frase italiana (se la lingua è EN e la frase è nel dizionario); altrimenti la restituisce uguale.
+        function t(it) {
+            if (LANG !== 'en' || typeof it !== 'string') return it;
+            const k = _norm(it);
+            return Object.prototype.hasOwnProperty.call(I18N_EN, k) ? I18N_EN[k] : it;
+        }
+        // Campo prodotto: usa la versione inglese salvata da admin (es. description_en) se esiste.
+        // Traduzioni dei prodotti già presenti, caricate da products-en.json: { idProdotto: { name_en, description_en, shortNote_en } }
+        let PRODUCT_EN = {};
+        fetch('products-en.json').then(r => r.ok ? r.json() : {}).then(j => {
+            PRODUCT_EN = j || {};
+            if (LANG === 'en' && typeof renderHomeLayout === 'function') setLang('en');
+        }).catch(() => {});
+        // Campo prodotto in inglese: prima quello inserito da admin (es. description_en), poi products-en.json, poi il dizionario.
+        function pf(p, field) {
+            if (LANG === 'en') {
+                const k = field + '_en';
+                if (p[k] && String(p[k]).trim()) return p[k];
+                const f = PRODUCT_EN[p.id];
+                if (f && f[k]) return f[k];
+            }
+            return t(p[field]);
+        }
+
+        function _detectLang() {
+            try {
+                const q = new URLSearchParams(location.search).get('lang');
+                if (q === 'it' || q === 'en') { localStorage.setItem('lm_lang', q); return q; }
+            } catch (e) {}
+            try {
+                const saved = localStorage.getItem('lm_lang');
+                if (saved === 'it' || saved === 'en') return saved;
+            } catch (e) {}
+            // Prima lingua preferita del browser: italiano -> IT, qualsiasi altra -> EN
+            const primary = ((navigator.languages && navigator.languages[0]) || navigator.language || 'it').toLowerCase();
+            return primary.startsWith('it') ? 'it' : 'en';
+        }
+
+        function _translateStaticDOM() {
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+                acceptNode(n) {
+                    const par = n.parentElement;
+                    if (!par || par.closest('script, style, #adminModal, .no-i18n')) return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            });
+            const nodes = [];
+            while (walker.nextNode()) nodes.push(walker.currentNode);
+            nodes.forEach(n => {
+                const raw = n.nodeValue;
+                if (!_norm(raw)) return;
+                if (!_i18nTextOrig.has(n)) {
+                    if (LANG !== 'en') return;
+                    _i18nTextOrig.set(n, raw);
+                }
+                const orig = _i18nTextOrig.get(n);
+                if (LANG === 'en') {
+                    const k = _norm(orig);
+                    if (Object.prototype.hasOwnProperty.call(I18N_EN, k)) {
+                        const lead = orig.match(/^\s*/)[0], trail = orig.match(/\s*$/)[0];
+                        n.nodeValue = lead + I18N_EN[k] + trail;
+                    }
+                } else {
+                    n.nodeValue = orig;
+                }
+            });
+            document.querySelectorAll('[placeholder]').forEach(el => {
+                if (el.closest('#adminModal')) return;
+                if (!_i18nPhOrig.has(el)) _i18nPhOrig.set(el, el.getAttribute('placeholder'));
+                const orig = _i18nPhOrig.get(el);
+                el.setAttribute('placeholder', LANG === 'en' && I18N_EN[_norm(orig)] ? I18N_EN[_norm(orig)] : orig);
+            });
+            // Meta description / Open Graph
+            const metas = {
+                description: document.querySelector('meta[name="description"]'),
+                ogDescription: document.querySelector('meta[property="og:description"]')
+            };
+            Object.keys(metas).forEach(key => {
+                const m = metas[key];
+                if (!m) return;
+                if (!(key in _i18nMetaOrig)) _i18nMetaOrig[key] = m.getAttribute('content');
+                m.setAttribute('content', LANG === 'en' ? I18N_META_EN[key] : _i18nMetaOrig[key]);
+            });
+        }
+
+        function _updateLangSwitchUI() {
+            document.querySelectorAll('[data-lang]').forEach(b => {
+                const active = b.dataset.lang === LANG;
+                b.classList.toggle('text-black', active);
+                b.classList.toggle('border-black', active);
+                b.classList.toggle('text-zinc-400', !active);
+                b.classList.toggle('border-transparent', !active);
+                b.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+        }
+
+        function setLang(lang, persist) {
+            LANG = lang === 'en' ? 'en' : 'it';
+            if (persist) { try { localStorage.setItem('lm_lang', LANG); } catch (e) {} }
+            document.documentElement.lang = LANG;
+            _translateStaticDOM();
+            _updateLangSwitchUI();
+            // Parti generate da JavaScript: si ridisegnano nella nuova lingua
+            if (typeof renderHomeLayout === 'function') {
+                renderHomeLayout();
+                if (typeof updateCart === 'function') updateCart();
+                const pv = document.getElementById('view-product');
+                if (typeof currentProductId !== 'undefined' && currentProductId && pv && pv.classList.contains('active')) {
+                    const y = window.scrollY;
+                    showProduct(currentProductId);
+                    window.scrollTo(0, y);
+                }
+            }
+        }
+
+        LANG = _detectLang();
+        document.documentElement.lang = LANG;
+        if (LANG === 'en') _translateStaticDOM();
+        document.addEventListener('DOMContentLoaded', _updateLangSwitchUI);
+    </script>
+
     <script>
         let apiKey = "AIzaSyCG2vJW4Zcs1mmANEq7TsX2hdoLo4EzpTg";
         let currentProductId = null;
@@ -709,13 +994,13 @@
             if (!input.trim()) return;
             btn.disabled = true;
             resDiv.classList.remove('hidden', 'border-red-500');
-            resDiv.innerText = "AI Stylist sta analizzando la collezione...";
+            resDiv.innerText = t("AI Stylist sta analizzando la collezione...");
 
             const context = getCatalogContext();
-            const sys = `Sei l'AI Stylist di Boutique LM, un e-commerce fiorentino di luxury reselling. Vendiamo borse e accessori autentici di Hermès, Chanel, Louis Vuitton e altri grandi brand. ${context}. Consiglia al cliente il pezzo più adatto alla sua richiesta, in modo elegante e diretto. Se la richiesta è volgare o inappropriata, rifiuta con estrema eleganza.`;
+            const sys = `Sei l'AI Stylist di Boutique LM, un e-commerce fiorentino di luxury reselling. Vendiamo borse e accessori autentici di Hermès, Chanel, Louis Vuitton e altri grandi brand. ${context}. Consiglia al cliente il pezzo più adatto alla sua richiesta, in modo elegante e diretto. Se la richiesta è volgare o inappropriata, rifiuta con estrema eleganza.${LANG === 'en' ? ' Rispondi sempre in inglese.' : ''}`;
 
             try { resDiv.innerText = await callGemini(input, sys); }
-            catch (e) { resDiv.innerText = "L'AI è momentaneamente offline."; resDiv.classList.add('border-red-500'); }
+            catch (e) { resDiv.innerText = t("L'AI è momentaneamente offline."); resDiv.classList.add('border-red-500'); }
             finally { btn.disabled = false; }
         }
 
@@ -724,10 +1009,10 @@
             const div = document.getElementById('detail-story');
             const btn = document.getElementById('story-btn');
             btn.disabled = true;
-            div.innerText = "AI Stylist sta analizzando il pezzo...";
-            const sys = `Sei l'AI Stylist di Boutique LM. Scrivi una breve descrizione (max 40 parole) che racconta la storia e l'allure di questo articolo di lusso: ${prod.name}. Menziona il brand, il periodo storico se rilevante, e perché è un pezzo da collezione. Tono elegante e da fashion insider.`;
+            div.innerText = t("AI Stylist sta analizzando il pezzo...");
+            const sys = `Sei l'AI Stylist di Boutique LM. Scrivi una breve descrizione (max 40 parole) che racconta la storia e l'allure di questo articolo di lusso: ${prod.name}. Menziona il brand, il periodo storico se rilevante, e perché è un pezzo da collezione. Tono elegante e da fashion insider.${LANG === 'en' ? ' Scrivi in inglese.' : ''}`;
             try { div.innerText = `"${await callGemini("Racconta la storia di questo pezzo.", sys)}"`; }
-            catch (e) { div.innerText = "Informazioni non disponibili al momento."; }
+            catch (e) { div.innerText = t("Informazioni non disponibili al momento."); }
             finally { btn.disabled = false; }
         }
 
@@ -742,8 +1027,8 @@
             const messaggio = document.getElementById('form-messaggio').value.trim();
             const btn = document.getElementById('form-submit-btn');
 
-            const subject = encodeURIComponent(`Richiesta ${servizio} - Boutique LM`);
-            const body = encodeURIComponent(`Nome: ${nome}\nEmail: ${email}\nServizio: ${servizio}\n\nMessaggio:\n${messaggio}`);
+            const subject = encodeURIComponent(`${t('Richiesta')} ${servizio} - Boutique LM`);
+            const body = encodeURIComponent(`${t('Nome')}: ${nome}\nEmail: ${email}\n${t('Servizio')}: ${servizio}\n\n${t('Messaggio')}:\n${messaggio}`);
             
             window.location.href = `mailto:info@boutiquelm.it?subject=${subject}&body=${body}`;
 
@@ -758,11 +1043,11 @@
         }
 
         function sendServicesWhatsApp() {
-            const nome = document.getElementById('form-nome').value.trim() || 'Cliente';
+            const nome = document.getElementById('form-nome').value.trim() || t('Cliente');
             const servizio = document.getElementById('form-servizio').value;
             const messaggio = document.getElementById('form-messaggio').value.trim();
             
-            const testo = `Ciao Boutique LM! Sono ${nome}.\n\nVorrei richiedere informazioni per: *${servizio}*\n\n${messaggio ? messaggio : 'Potete contattarmi per un preventivo?'}`;
+            const testo = `${t('Ciao Boutique LM! Sono')} ${nome}.\n\n${t('Vorrei richiedere informazioni per:')} *${servizio}*\n\n${messaggio ? messaggio : t('Potete contattarmi per un preventivo?')}`;
             const url = `https://wa.me/393931218244?text=${encodeURIComponent(testo)}`;
             window.open(url, '_blank');
         }
@@ -841,11 +1126,11 @@
                             <div class="flex items-center gap-5">
                                 ${cover ? `<div class="w-14 h-14 md:w-20 md:h-20 rounded-xl overflow-hidden bg-zinc-100 shrink-0 shadow-sm border border-zinc-100"><img src="${cover}" class="w-full h-full object-cover" loading="lazy"></div>` : ''}
                                 <div>
-                                    <span class="text-[9px] font-bold tracking-[0.5em] text-zinc-400 uppercase mb-1 block">${products.length} ${products.length === 1 ? 'pezzo' : 'pezzi'} disponibili</span>
-                                    <h2 class="serif text-3xl md:text-5xl font-bold tracking-tighter">${catName}</h2>
+                                    <span class="text-[9px] font-bold tracking-[0.5em] text-zinc-400 uppercase mb-1 block">${products.length} ${products.length === 1 ? t('pezzo') : t('pezzi')} ${t('disponibili')}</span>
+                                    <h2 class="serif text-3xl md:text-5xl font-bold tracking-tighter">${t(catName)}</h2>
                                 </div>
                             </div>
-                            ${extraCount > 0 ? `<button onclick="toggleCatMore('${slugId}', ${products.length})" id="btn-${slugId}" class="text-[9px] font-bold uppercase tracking-widest border-b border-black hover:text-zinc-500 transition shrink-0">Vedi tutti (${products.length}) ↓</button>` : ''}
+                            ${extraCount > 0 ? `<button onclick="toggleCatMore('${slugId}', ${products.length})" id="btn-${slugId}" class="text-[9px] font-bold uppercase tracking-widest border-b border-black hover:text-zinc-500 transition shrink-0">${t('Vedi tutti')} (${products.length}) ↓</button>` : ''}
                         </div>
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
                             ${shown.map(p => buildProductCard(p)).join('')}
@@ -867,7 +1152,7 @@
             if (!el) return;
             const isHidden = el.classList.contains('hidden');
             el.classList.toggle('hidden');
-            if (btn) btn.textContent = isHidden ? 'Chiudi ↑' : `Vedi tutti (${total}) ↓`;
+            if (btn) btn.textContent = isHidden ? t('Chiudi ↑') : `${t('Vedi tutti')} (${total}) ↓`;
             if (isHidden) lucide.createIcons();
         };
 
@@ -883,7 +1168,7 @@
 
             const isSoldOut = totalStock <= 0 && !p.isService;
             let priceDisplay = `€${p.price.toFixed(2)}`;
-            if (p.price < 0) priceDisplay = 'Su Preventivo';
+            if (p.price < 0) priceDisplay = t('Su Preventivo');
 
             let displayImage = (p.images && p.images[0]) ? p.images[0] : (p.image || 'https://via.placeholder.com/500');
             if (p.variantsData && p.variantsData.length > 0) {
@@ -897,13 +1182,13 @@
                     <div class="relative aspect-square overflow-hidden bg-zinc-100 rounded-sm">
                         <img src="${displayImage}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" loading="lazy">
                         ${isSoldOut ?
-                            '<div class="absolute inset-0 flex items-center justify-center"><span class="sold-out-badge">Esaurito</span></div>' :
+                            `<div class="absolute inset-0 flex items-center justify-center"><span class="sold-out-badge">${t('Esaurito')}</span></div>` :
                             '<div class="absolute bottom-4 right-4 bg-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition duration-500 shadow-xl"><i data-lucide="plus" class="w-4 h-4 text-black"></i></div>'
                         }
                     </div>
                     <div class="mt-6 text-center">
-                        <p class="text-[8px] font-bold tracking-[0.4em] uppercase text-zinc-400 mb-2 italic">${p.category || ''}</p>
-                        <h3 class="serif font-bold text-lg mb-1 tracking-tight">${p.name}</h3>
+                        <p class="text-[8px] font-bold tracking-[0.4em] uppercase text-zinc-400 mb-2 italic">${t(p.category || '')}</p>
+                        <h3 class="serif font-bold text-lg mb-1 tracking-tight">${pf(p, 'name')}</h3>
                         <p class="font-medium text-zinc-500 text-sm italic">${priceDisplay}</p>
                     </div>
                 </div>
@@ -918,29 +1203,29 @@
             // Aggiorna URL per deep link e condivisione
             history.replaceState(null, '', `?id=${id}`);
 
-            document.getElementById('detail-title').innerText = p.name;
-            document.getElementById('detail-description').innerText = p.description;
+            document.getElementById('detail-title').innerText = pf(p, 'name');
+            document.getElementById('detail-description').innerText = pf(p, 'description');
 
             const priceEl = document.getElementById('detail-price');
             const btn = document.getElementById('add-to-cart-btn');
 
             if (p.price < 0) {
-                priceEl.innerText = "Su Preventivo";
-                btn.innerText = "Richiedi Valutazione";
+                priceEl.innerText = t("Su Preventivo");
+                btn.innerText = t("Richiedi Valutazione");
                 btn.onclick = () => {
-                    const codeStr = p.internalCode ? ` (Codice: ${p.internalCode})` : "";
+                    const codeStr = p.internalCode ? ` (${t('Codice')}: ${p.internalCode})` : "";
                     window.openContactChoice(
-                        `Richiesta Preventivo - ${p.name}`,
-                        `Salve Atelier Boutique LM, vorrei richiedere informazioni/preventivo per il prodotto: ${p.name}${codeStr}.`
+                        `${t('Richiesta Preventivo')} - ${p.name}`,
+                        `${t('Salve Atelier Boutique LM, vorrei richiedere informazioni/preventivo per il prodotto:')} ${p.name}${codeStr}.`
                     );
                 };
             } else {
                 priceEl.innerText = `€${p.price.toFixed(2)}`;
-                btn.innerText = "Aggiungi al carrello";
+                btn.innerText = t("Aggiungi al carrello");
                 btn.onclick = () => addToCartCurrent();
             }
 
-            document.getElementById('detail-breadcrumb-name').innerText = p.name;
+            document.getElementById('detail-breadcrumb-name').innerText = pf(p, 'name');
 
             // Populate metadata details
             const brandCont = document.getElementById('detail-brand-container');
@@ -955,17 +1240,17 @@
 
             const originCont = document.getElementById('detail-origin-container');
             const originEl = document.getElementById('detail-origin');
-            if (p.origin) { originEl.innerText = p.origin; originCont.classList.remove('hidden'); }
+            if (p.origin) { originEl.innerText = pf(p, 'origin'); originCont.classList.remove('hidden'); }
             else { originCont.classList.add('hidden'); }
 
             const condCont = document.getElementById('detail-condition-container');
             const condEl = document.getElementById('detail-condition');
-            if (p.condition) { condEl.innerText = p.condition; condCont.classList.remove('hidden'); }
+            if (p.condition) { condEl.innerText = pf(p, 'condition'); condCont.classList.remove('hidden'); }
             else { condCont.classList.add('hidden'); }
 
             const matCont = document.getElementById('detail-material-container');
             const matEl = document.getElementById('detail-material');
-            if (p.material) { matEl.innerText = p.material; matCont.classList.remove('hidden'); }
+            if (p.material) { matEl.innerText = pf(p, 'material'); matCont.classList.remove('hidden'); }
             else { matCont.classList.add('hidden'); }
 
             const serCont = document.getElementById('detail-serial-container');
@@ -975,7 +1260,7 @@
 
             const noteCont = document.getElementById('detail-note-container');
             const noteEl = document.getElementById('detail-note');
-            if (p.shortNote) { noteEl.innerText = p.shortNote; noteCont.classList.remove('hidden'); }
+            if (p.shortNote) { noteEl.innerText = pf(p, 'shortNote'); noteCont.classList.remove('hidden'); }
             else { noteCont.classList.add('hidden'); }
 
             // Check if first variant has specific image(s)
@@ -997,14 +1282,14 @@
 
             const varContainer = document.getElementById('detail-variants');
             if (p.variants && p.variants.length > 0) {
-                varContainer.innerHTML = `<label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block font-bold">${p.variantLabel}</label>
+                varContainer.innerHTML = `<label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block font-bold">${t(p.variantLabel)}</label>
                     <div class="grid grid-cols-2 gap-2 font-bold uppercase text-[9px] tracking-widest italic">
                         ${p.variants.map((v, i) => {
                     const vStock = p.variantsStock ? p.variantsStock[v] : 0;
                     const isVSoldOut = vStock <= 0;
                     return `
                             <button onclick="onVariantClick(this, '${v}', ${i})" class="variant-btn border py-3 transition hover:border-black ${i === 0 ? 'bg-black text-white border-black' : ''} ${isVSoldOut ? 'sold-out' : ''}">
-                                ${v} ${isVSoldOut ? '(Esaurito)' : ''}
+                                ${v} ${isVSoldOut ? t('(Esaurito)') : ''}
                             </button>
                         `}).join('')}
                     </div>`;
@@ -1015,7 +1300,7 @@
                 aiContainer.classList.add('hidden');
             } else {
                 aiContainer.classList.remove('hidden');
-                document.getElementById('detail-story').innerText = "Scopri la storia e la provenienza di questo pezzo...";
+                document.getElementById('detail-story').innerText = t("Scopri la storia e la provenienza di questo pezzo...");
             }
 
             updateDetailViewState();
@@ -1121,10 +1406,10 @@
             const vStock = p.variantsStock ? p.variantsStock[selectedVariant] : 0;
 
             if (vStock <= 0) {
-                btn.disabled = true; btn.innerText = "Variante Esaurita";
+                btn.disabled = true; btn.innerText = t("Variante Esaurita");
                 overlay.classList.add('hidden');
             } else {
-                btn.disabled = false; btn.innerText = "Aggiungi al carrello";
+                btn.disabled = false; btn.innerText = t("Aggiungi al carrello");
                 overlay.classList.add('hidden');
             }
         }
@@ -1138,7 +1423,7 @@
             const prod = localProducts.find(it => it.name === n);
             const vStock = prod.variantsStock ? prod.variantsStock[v] : 0;
 
-            if (prod.price > 0 && vStock <= 0) { alert("Spiacenti, questa variante è esaurita."); return; }
+            if (prod.price > 0 && vStock <= 0) { alert(t("Spiacenti, questa variante è esaurita.")); return; }
             cart.push({ id: prod.id, n, p, v }); updateCart(); toggleCart(true);
         }
 
@@ -1147,13 +1432,13 @@
             const items = document.getElementById('cart-items');
             const total = document.getElementById('cart-total');
             count.innerText = cart.length;
-            if (cart.length === 0) { items.innerHTML = '<p class="text-zinc-400 italic text-center py-20 font-light">Il carrello è vuoto.</p>'; total.innerText = '€0,00'; return; }
+            if (cart.length === 0) { items.innerHTML = `<p class="text-zinc-400 italic text-center py-20 font-light">${t('Il carrello è vuoto.')}</p>`; total.innerText = '€0,00'; return; }
             let sum = 0;
             items.innerHTML = cart.map((it, i) => {
                 let priceDisplay = `€${it.p.toFixed(2)}`;
-                if (it.p < 0) priceDisplay = "Richiesta Preventivo";
+                if (it.p < 0) priceDisplay = t("Richiesta Preventivo");
                 if (it.p > 0) sum += it.p;
-                return `<div class="flex justify-between border-b border-zinc-50 pb-4"><div class="text-[10px] font-bold uppercase leading-relaxed">${it.n}<br><span class="text-zinc-400 italic">${it.v || ''}</span><br>${priceDisplay}</div><button onclick="cart.splice(${i},1);updateCart()" class="text-zinc-300 hover:text-black transition">X</button></div>`;
+                return `<div class="flex justify-between border-b border-zinc-50 pb-4"><div class="text-[10px] font-bold uppercase leading-relaxed">${(() => { const pr = localProducts.find(x => x.id === it.id); return pr ? pf(pr, 'name') : it.n; })()}<br><span class="text-zinc-400 italic">${it.v || ''}</span><br>${priceDisplay}</div><button onclick="cart.splice(${i},1);updateCart()" class="text-zinc-300 hover:text-black transition">X</button></div>`;
             }).join('');
             total.innerText = `€${sum.toFixed(2)}`;
         }
@@ -1164,16 +1449,16 @@
 
             const hasService = cart.some(item => item.p < 0);
             if (hasService) {
-                const itemsStr = cart.map(item => `- ${item.n} (${item.v || 'Standard'}) - ${item.p < 0 ? 'Su Preventivo' : '€' + item.p.toFixed(2)}`).join('\n');
+                const itemsStr = cart.map(item => `- ${item.n} (${item.v || 'Standard'}) - ${item.p < 0 ? t('Su Preventivo') : '€' + item.p.toFixed(2)}`).join('\n');
                 window.openContactChoice(
-                    "Richiesta Ordine Misto & Preventivo",
-                    `Salve Atelier Boutique LM, vorrei procedere con il seguente ordine:\n\n${itemsStr}\n\nAttendo dettagli per il pagamento e preventivo.`
+                    t("Richiesta Ordine Misto & Preventivo"),
+                    `${t('Salve Atelier Boutique LM, vorrei procedere con il seguente ordine:')}\n\n${itemsStr}\n\n${t('Attendo dettagli per il pagamento e preventivo.')}`
                 );
                 return;
             }
 
             btn.disabled = true;
-            btn.innerText = "Verifica Stock...";
+            btn.innerText = t("Verifica Stock...");
             const item = cart[0];
             const p = localProducts.find(pr => pr.id === item.id);
             if (p && p.stripeUrl && p.stripeUrl.includes('buy.stripe.com')) {
@@ -1182,19 +1467,19 @@
                 if (vStock > 0) {
                     const success = await handleStockDecrement(p.id, item.v);
                     if (success) {
-                        btn.innerText = "Reindirizzamento Stripe...";
+                        btn.innerText = t("Reindirizzamento Stripe...");
                         window.location.href = p.stripeUrl;
                     } else {
-                        alert("Spiacenti, la variante selezionata è terminata durante la transazione.");
-                        btn.disabled = false; btn.innerText = "Procedi al pagamento";
+                        alert(t("Spiacenti, la variante selezionata è terminata durante la transazione."));
+                        btn.disabled = false; btn.innerText = t("Procedi al pagamento");
                     }
                 } else {
-                    alert("Variante esaurita.");
-                    btn.disabled = false; btn.innerText = "Procedi al pagamento";
+                    alert(t("Variante esaurita."));
+                    btn.disabled = false; btn.innerText = t("Procedi al pagamento");
                 }
             } else {
-                alert("ATTENZIONE: Link di pagamento mancante o prodotto esaurito.");
-                btn.disabled = false; btn.innerText = "Procedi al pagamento";
+                alert(t("ATTENZIONE: Link di pagamento mancante o prodotto esaurito."));
+                btn.disabled = false; btn.innerText = t("Procedi al pagamento");
             }
         }
 
@@ -1260,7 +1545,7 @@
                 title: `${p.name} — Boutique LM`,
                 text: p.description
                     ? `${p.description.slice(0, 100)}... — Boutique LM`
-                    : `Scopri ${p.name} su Boutique LM — luxury reselling Firenze`,
+                    : `${t('Scopri')} ${p.name} ${t('su Boutique LM — luxury reselling Firenze')}`,
                 url
             };
             if (navigator.share) {
@@ -1270,10 +1555,10 @@
                 navigator.clipboard.writeText(url).then(() => {
                     const btn = document.getElementById('share-btn');
                     const orig = btn.innerHTML;
-                    btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 inline mr-1"></i> Link copiato!';
+                    btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 inline mr-1"></i> ' + t('Link copiato!');
                     lucide.createIcons();
                     setTimeout(() => { btn.innerHTML = orig; lucide.createIcons(); }, 2500);
-                }).catch(() => alert('Copia il link: ' + url));
+                }).catch(() => alert(t('Copia il link:') + ' ' + url));
             }
         }
 
@@ -1287,8 +1572,8 @@
             banner.innerHTML = `
                 <span class="text-3xl shrink-0">✅</span>
                 <div class="flex-1">
-                    <p class="font-bold text-sm uppercase tracking-widest mb-1">Ordine completato!</p>
-                    <p class="text-xs text-zinc-400 font-light leading-relaxed">Grazie per aver scelto Boutique LM. Riceverai una conferma a breve.</p>
+                    <p class="font-bold text-sm uppercase tracking-widest mb-1">${t('Ordine completato!')}</p>
+                    <p class="text-xs text-zinc-400 font-light leading-relaxed">${t('Grazie per aver scelto Boutique LM. Riceverai una conferma a breve.')}</p>
                 </div>
                 <button onclick="this.parentElement.remove()" class="shrink-0 text-zinc-500 hover:text-white transition text-lg font-bold ml-2">✕</button>
             `;
@@ -1521,6 +1806,32 @@
                                     <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Descrizione Articolo</label>
                                     <textarea id="productDescription" class="w-full px-3 py-2 border rounded text-sm"
                                         placeholder="Descrizione del prodotto (supporta Markdown basilare)" rows="3"></textarea>
+                                </div>
+
+                                <!-- Row 6b: Versione inglese (mostrata ai visitatori in inglese) -->
+                                <div class="flex flex-wrap items-center justify-between gap-2 -mb-2">
+                                    <span class="text-xs font-bold uppercase text-zinc-400 ml-1">Versione inglese <span class="normal-case font-normal">- per i visitatori dall'estero</span></span>
+                                    <button type="button" id="translateEnBtn" onclick="translateProductToEnglish()"
+                                        class="px-3 py-1.5 text-xs font-bold rounded-lg bg-black text-white hover:bg-zinc-800 transition uppercase tracking-wider">✨ Traduci in inglese</button>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Name (EN) <span class="normal-case font-normal">- opzionale</span></label>
+                                    <input type="text" id="productNameEn"
+                                        class="w-full px-3 py-2 border rounded hover:border-zinc-400 text-sm transition"
+                                        placeholder="English product name">
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Description (EN) <span class="normal-case font-normal">- opzionale</span></label>
+                                        <textarea id="productDescriptionEn" class="w-full px-3 py-2 border rounded text-sm"
+                                            placeholder="English description shown to international visitors" rows="3"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 uppercase text-zinc-400 ml-1">Short Note (EN) <span class="normal-case font-normal">- opzionale</span></label>
+                                        <input type="text" id="productShortNoteEn"
+                                            class="w-full px-3 py-2 border rounded hover:border-zinc-400 text-sm transition"
+                                            placeholder="e.g. Light gold hardware">
+                                    </div>
                                 </div>
 
                                 <!-- Row 7: Upload Foto (PRIMA delle varianti, più prominente) -->
@@ -2519,6 +2830,33 @@
         }
 
         // SAVE PRODUCT
+        // Compila i campi inglesi partendo da quelli italiani (usa Gemini). Riempie solo i campi EN ancora vuoti: poi si controlla e si salva.
+        async function translateProductToEnglish() {
+            const btn = document.getElementById("translateEnBtn");
+            const src = {
+                name: document.getElementById("productName").value.trim(),
+                description: document.getElementById("productDescription").value.trim(),
+                shortNote: document.getElementById("productShortNote").value.trim()
+            };
+            const targets = { name: "productNameEn", description: "productDescriptionEn", shortNote: "productShortNoteEn" };
+            const todo = Object.keys(src).filter(k => src[k] && !document.getElementById(targets[k]).value.trim());
+            if (todo.length === 0) { alert("Niente da tradurre: i campi inglesi sono già compilati (o quelli italiani sono vuoti)."); return; }
+            const original = btn.textContent;
+            btn.disabled = true; btn.textContent = "Traduzione...";
+            try {
+                const payload = {}; todo.forEach(k => payload[k] = src[k]);
+                const sys = "Sei un traduttore professionista di moda e lusso. Traduci dall'italiano all'inglese i valori del JSON che ricevi, con tono elegante e naturale da e-commerce di luxury reselling. Mantieni invariati nomi di brand, modelli, codici, misure, emoji, elenchi puntati (•) e a capo. Rispondi SOLO con un JSON valido con le stesse chiavi, senza testo extra e senza markdown.";
+                let raw = await callGemini(JSON.stringify(payload), sys);
+                raw = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+                const out = JSON.parse(raw);
+                todo.forEach(k => { if (typeof out[k] === "string") document.getElementById(targets[k]).value = out[k]; });
+                alert("Traduzione inserita. Controllala e poi premi Salva.");
+            } catch (e) {
+                console.error("Traduzione fallita:", e);
+                alert("Traduzione automatica non riuscita. Controlla la chiave AI nelle impostazioni, oppure scrivi i campi inglesi a mano.");
+            } finally { btn.disabled = false; btn.textContent = original; }
+        }
+
         async function saveProduct() {
             if (!currentUser) { alert("Sessione scaduta."); return; }
             const btn = document.getElementById("saveBtn");
@@ -2583,6 +2921,9 @@
                 variants: variantsList,
                 variantLabel: (document.getElementById("productVariantLabel") && document.getElementById("productVariantLabel").value) || "Variante",
                 description: document.getElementById("productDescription").value,
+                name_en: document.getElementById("productNameEn").value.trim(),
+                description_en: document.getElementById("productDescriptionEn").value,
+                shortNote_en: document.getElementById("productShortNoteEn").value.trim(),
                 image: mainImages.length > 0 ? mainImages[0] : "",
                 images: mainImages,
                 stripeUrl: document.getElementById("productStripeLink").value,
@@ -2657,6 +2998,9 @@
             document.getElementById("productMaterial").value = p.material || "";
             document.getElementById("productStatus").value = p.status || "Disponibile";
             document.getElementById("productShortNote").value = p.shortNote || "";
+            document.getElementById("productNameEn").value = p.name_en || "";
+            document.getElementById("productDescriptionEn").value = p.description_en || "";
+            document.getElementById("productShortNoteEn").value = p.shortNote_en || "";
 
             // Handle Category Edit
             const catSelect = document.getElementById("productCategorySelect");
@@ -2741,6 +3085,9 @@
             document.getElementById("productMaterial").value = "";
             document.getElementById("productStatus").value = "Disponibile";
             document.getElementById("productShortNote").value = "";
+            document.getElementById("productNameEn").value = "";
+            document.getElementById("productDescriptionEn").value = "";
+            document.getElementById("productShortNoteEn").value = "";
 
             // Reset Dropdown
             const catSelect = document.getElementById("productCategorySelect");

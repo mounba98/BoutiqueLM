@@ -16,6 +16,8 @@
       "overview.md",
       "README.md",
       "TODO.md",
+      "CHANGELOG.md",
+      "tools/**",
       "instructions.md",
       "deploy_website.cmd",
       "start_server.cmd",
